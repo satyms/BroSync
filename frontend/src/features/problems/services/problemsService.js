@@ -25,4 +25,10 @@ export const problemsService = {
    */
   runCode: (data) =>
     axiosInstance.post(API_ROUTES.RUN_CODE, data).then((r) => r.data?.data || r.data),
+
+  /**
+   * Get the solvers leaderboard for a problem.
+   */
+  getSolvers: (slug) =>
+    axiosInstance.get(API_ROUTES.PROBLEM_SOLVERS(slug)).then((r) => r.data?.data || []),
 };

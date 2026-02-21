@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import axiosInstance from '@api/axiosInstance';
 import { API_ROUTES } from '@shared/utils/constants';
@@ -9,15 +9,22 @@ import { StatusBadge } from '@shared/components/ui/Badge';
 import ActivityMatrix from '../components/ActivityMatrix';
 import StatsDonut from '../components/StatsDonut';
 import { Code2, Trophy, BarChart3, Star } from 'lucide-react';
+import { fetchProfile } from '@features/auth/authSlice';
 
 export default function DashboardPage() {
+  const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Always fetch fresh profile so solved-count updates after submitting
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
+
   useEffect(() => {
     axiosInstance.get(API_ROUTES.MY_SUBMISSIONS + '?limit=8')
-      .then((r) => setSubmissions(r.data?.results || r.data || []))
+      .then((r) => setSubmissions(r.data?.results || r.data?.data?.results || r.data?.data || r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -73,8 +80,8 @@ export default function DashboardPage() {
               <StatCard
                 icon={<BarChart3 className="w-4 h-4 text-[#64748B]" />}
                 label="Global Ranking"
-                value={`#${formatNumber(Math.max(1, 50000 - xp))}`}
-                sub={`Top ${Math.max(1, Math.round((1 - xp / 50000) * 100))}%`}
+                value={user.global_rank ? `#${formatNumber(user.global_rank)}` : '—'}
+                sub={user.global_rank ? `by rating` : 'No rating yet'}
               />
               <StatCard
                 icon={<Star className="w-4 h-4 text-[#64748B]" />}

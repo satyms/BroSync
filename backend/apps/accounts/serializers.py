@@ -118,6 +118,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """Read-only serializer for user profile information."""
 
     full_name = serializers.CharField(read_only=True)
+    global_rank = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -134,9 +135,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "problems_solved",
             "contests_participated",
             "rating",
+            "global_rank",
             "date_joined",
         ]
         read_only_fields = fields
+
+    def get_global_rank(self, obj):
+        """Count of active users with strictly higher rating + 1."""
+        return User.objects.filter(
+            is_active=True, rating__gt=obj.rating
+        ).count() + 1
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

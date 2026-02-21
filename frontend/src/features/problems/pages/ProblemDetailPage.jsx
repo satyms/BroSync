@@ -39,6 +39,8 @@ export default function ProblemDetailPage() {
   const [mySubmissions, setMySubmissions] = useState([]);
   const [stdin, setStdin] = useState('');
   const [activeConsoleTab, setActiveConsoleTab] = useState('input');
+  const [solvers, setSolvers] = useState([]);
+  const [solversLoading, setSolversLoading] = useState(false);
 
   useEffect(() => {
     problemsService.getProblem(slug)
@@ -53,6 +55,17 @@ export default function ProblemDetailPage() {
       .catch(() => toast.error('Problem not found'))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  // Load solvers when tab is activated
+  useEffect(() => {
+    if (activeTab === 'solvers' && problem && solvers.length === 0 && !solversLoading) {
+      setSolversLoading(true);
+      problemsService.getSolvers(slug)
+        .then(setSolvers)
+        .catch(() => setSolvers([]))
+        .finally(() => setSolversLoading(false));
+    }
+  }, [activeTab, problem, slug]);
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
@@ -137,7 +150,7 @@ export default function ProblemDetailPage() {
       <div className="lg:w-[45%] bg-bg-card border border-border-primary rounded-xl flex flex-col overflow-hidden">
         {/* Tabs */}
         <div className="flex items-center border-b border-border-primary px-4">
-          {['description', 'submissions', 'result'].map((tab) => (
+          {['description', 'submissions', 'solvers', 'result'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -147,7 +160,16 @@ export default function ProblemDetailPage() {
                   : 'border-transparent text-text-secondary hover:text-text-primary'
                 }`}
             >
-              {tab}
+              {tab === 'solvers' ? (
+                <span className="flex items-center gap-1.5">
+                  Solvers
+                  {problem?.accepted_submissions > 0 && (
+                    <span className="bg-brand-blue/20 text-brand-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                      {problem.accepted_submissions}
+                    </span>
+                  )}
+                </span>
+              ) : tab}
             </button>
           ))}
         </div>
@@ -158,6 +180,9 @@ export default function ProblemDetailPage() {
           )}
           {activeTab === 'submissions' && (
             <SubmissionsTab submissions={mySubmissions} />
+          )}
+          {activeTab === 'solvers' && (
+            <SolversTab solvers={solvers} loading={solversLoading} />
           )}
           {activeTab === 'result' && latestResult && (
             <ResultTab result={latestResult} />
@@ -492,6 +517,103 @@ function SubmissionsTab({ submissions }) {
             <span>{formatExecTime(sub.execution_time_ms)}</span>
             <span>{timeAgo(sub.submitted_at)}</span>
           </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const LANG_COLORS = {
+  python: 'text-blue-400 bg-blue-400/10',
+  cpp: 'text-purple-400 bg-purple-400/10',
+  java: 'text-orange-400 bg-orange-400/10',
+  javascript: 'text-yellow-400 bg-yellow-400/10',
+};
+const RANK_STYLES = [
+  'text-yellow-400 font-bold',  // 🥇
+  'text-gray-300 font-bold',    // 🥈
+  'text-orange-400 font-bold',  // 🥉
+];
+const RANK_EMOJI = ['🥇', '🥈', '🥉'];
+
+function SolversTab({ solvers, loading }) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-6 h-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
+          <span className="text-text-muted text-xs font-mono">Loading solvers…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (solvers.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <span className="text-4xl">🏆</span>
+        <p className="text-text-primary text-sm font-semibold">No one has solved this yet</p>
+        <p className="text-text-muted text-xs font-mono">Be the first to solve it!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {/* Header */}
+      <div className="grid grid-cols-12 gap-2 px-3 py-2 text-[10px] text-text-muted font-mono uppercase tracking-wider border-b border-border-secondary">
+        <span className="col-span-1 text-center">#</span>
+        <span className="col-span-4">User</span>
+        <span className="col-span-2">Lang</span>
+        <span className="col-span-2 text-right">Time</span>
+        <span className="col-span-2 text-right">Attempts</span>
+        <span className="col-span-1 text-right">When</span>
+      </div>
+
+      {/* Rows */}
+      {solvers.map((s, i) => (
+        <div
+          key={s.username}
+          className={`grid grid-cols-12 gap-2 items-center px-3 py-2.5 rounded-lg transition-colors hover:bg-bg-hover
+            ${i < 3 ? 'bg-bg-tertiary border border-border-secondary' : ''}`}
+        >
+          {/* Rank */}
+          <span className={`col-span-1 text-center text-sm ${RANK_STYLES[i] || 'text-text-muted font-mono text-xs'}`}>
+            {i < 3 ? RANK_EMOJI[i] : s.rank}
+          </span>
+
+          {/* Username */}
+          <div className="col-span-4 flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-blue to-accent-purple flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+              {s.username?.[0]?.toUpperCase()}
+            </div>
+            <Link
+              to={`/profile/${s.username}`}
+              className="text-text-primary text-xs font-semibold hover:text-brand-blue transition-colors truncate"
+            >
+              {s.username}
+            </Link>
+          </div>
+
+          {/* Language */}
+          <span className={`col-span-2 text-[10px] font-mono px-1.5 py-0.5 rounded w-fit ${LANG_COLORS[s.language] || 'text-text-muted bg-bg-hover'}`}>
+            {s.language}
+          </span>
+
+          {/* Runtime */}
+          <span className="col-span-2 text-right text-xs font-mono text-text-secondary">
+            {s.execution_time_ms != null ? `${s.execution_time_ms}ms` : '—'}
+          </span>
+
+          {/* Attempts */}
+          <span className={`col-span-2 text-right text-xs font-mono ${s.attempts === 1 ? 'text-green-400' : 'text-text-muted'}`}>
+            {s.attempts === 1 ? '✓ 1st try' : `${s.attempts} tries`}
+          </span>
+
+          {/* Solved at */}
+          <span className="col-span-1 text-right text-[10px] text-text-muted font-mono" title={s.solved_at}>
+            {timeAgo(s.solved_at)}
+          </span>
         </div>
       ))}
     </div>

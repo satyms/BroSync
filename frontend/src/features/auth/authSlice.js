@@ -38,7 +38,8 @@ export const registerUser = createAsyncThunk('auth/register', async (data, { rej
 export const fetchProfile = createAsyncThunk('auth/fetchProfile', async (_, { rejectWithValue }) => {
   try {
     const res = await axiosInstance.get(API_ROUTES.PROFILE);
-    return res.data;
+    // Backend wraps: { success, message, data: { user fields } }
+    return res.data?.data || res.data;
   } catch (err) {
     return rejectWithValue(err.response?.data);
   }
@@ -47,7 +48,7 @@ export const fetchProfile = createAsyncThunk('auth/fetchProfile', async (_, { re
 export const updateProfile = createAsyncThunk('auth/updateProfile', async (data, { rejectWithValue }) => {
   try {
     const res = await axiosInstance.patch(API_ROUTES.PROFILE_UPDATE, data);
-    return res.data;
+    return res.data?.data || res.data;
   } catch (err) {
     return rejectWithValue(err.response?.data);
   }

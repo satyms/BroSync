@@ -100,15 +100,22 @@ class AllSubmissionsView(generics.ListAPIView):
     """
     GET /api/v1/submissions/all/
     List all submissions (public feed).
-    Optional: ?problem=<uuid> to filter by problem.
+    Optional: ?problem=<uuid>, ?user=<uuid>, ?username=<str> to filter.
     """
     serializer_class = SubmissionListSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return SubmissionService.get_all_submissions(
+        qs = SubmissionService.get_all_submissions(
             problem_id=self.request.query_params.get("problem"),
         )
+        user_id = self.request.query_params.get("user")
+        username = self.request.query_params.get("username")
+        if user_id:
+            qs = qs.filter(user_id=user_id)
+        elif username:
+            qs = qs.filter(user__username=username)
+        return qs
 
 
 class SubmissionStatusView(APIView):

@@ -5,7 +5,7 @@ import { API_ROUTES } from '@shared/utils/constants';
 export const fetchNotifications = createAsyncThunk('notifications/fetch', async (_, { rejectWithValue }) => {
   try {
     const res = await axiosInstance.get(API_ROUTES.NOTIFICATIONS);
-    return res.data;
+    return res.data?.data;
   } catch (err) {
     return rejectWithValue(err.response?.data);
   }
@@ -46,9 +46,9 @@ const notificationsSlice = createSlice({
       .addCase(fetchNotifications.pending, (state) => { state.loading = true; })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.loading = false;
-        const data = action.payload?.results || action.payload || [];
-        state.items = data;
-        state.unreadCount = data.filter((n) => !n.is_read).length;
+        const results = action.payload?.results || [];
+        state.items = results;
+        state.unreadCount = action.payload?.unread_count ?? results.filter((n) => !n.is_read).length;
       });
 
     builder.addCase(markAsRead.fulfilled, (state, action) => {

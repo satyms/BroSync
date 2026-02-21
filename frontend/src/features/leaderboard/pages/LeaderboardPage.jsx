@@ -45,15 +45,15 @@ export default function LeaderboardPage() {
             const colors = ['bg-gray-400', 'bg-yellow-400', 'bg-orange-400'];
             const emojis = ['🥈', '🥇', '🥉'];
             return (
-              <div key={entry.id || entry.user?.id} className="flex flex-col items-center gap-2">
+              <div key={entry.id} className="flex flex-col items-center gap-2">
                 <div className="text-2xl">{emojis[i]}</div>
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-accent-purple flex items-center justify-center text-white font-bold text-sm">
-                  {entry.user?.username?.[0]?.toUpperCase()}
+                  {entry.username?.[0]?.toUpperCase()}
                 </div>
-                <Link to={`/profile/${entry.user?.username}`} className="text-text-primary text-xs font-semibold hover:text-brand-blue transition-colors text-center">
-                  {entry.user?.username}
+                <Link to={`/profile/${entry.username}`} className="text-text-primary text-xs font-semibold hover:text-brand-blue transition-colors text-center">
+                  {entry.username}
                 </Link>
-                <p className="text-text-muted text-xs font-mono">{formatNumber(entry.rating || entry.score)} pts</p>
+                <p className="text-text-muted text-xs font-mono">{formatNumber(entry.rating || 0)} pts</p>
                 <div className={`w-full ${heights[i]} ${colors[i]}/20 rounded-t-lg border border-t border-x ${colors[i]}/30`} />
               </div>
             );

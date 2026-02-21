@@ -1,6 +1,9 @@
-"""Leaderboard - URL stubs."""
+"""Leaderboard - URL Patterns."""
 from django.urls import path
+from .views import GlobalLeaderboardView
 
 app_name = "leaderboard"
 
-urlpatterns = []
+urlpatterns = [
+    path("", GlobalLeaderboardView.as_view(), name="global"),
+]

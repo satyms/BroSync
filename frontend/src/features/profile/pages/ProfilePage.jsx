@@ -21,19 +21,29 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setLoading(true);
-    // Fetch profile by username - fallback to own profile
-    const request = isOwnProfile
-      ? axiosInstance.get(API_ROUTES.PROFILE)
-      : axiosInstance.get(`/auth/users/?username=${username}`);
 
-    request
+    // For own profile use /auth/profile/, for others use /auth/users/<username>/profile/
+    const profileRequest = isOwnProfile
+      ? axiosInstance.get(API_ROUTES.PROFILE)
+      : axiosInstance.get(`/auth/users/${username}/profile/`);
+
+    profileRequest
       .then((r) => {
-        const user = r.data?.results?.[0] || r.data;
+        // All profile endpoints wrap: { success, message, data: { ...user } }
+        const user = r.data?.data || r.data;
         setProfile(user);
-        // Fetch their recent submissions
-        return axiosInstance.get(API_ROUTES.SUBMISSIONS + `?user=${user.id}&limit=10`);
+
+        // Fetch recent submissions — own = /submissions/me/, others = /submissions/all/?username=
+        const subsUrl = isOwnProfile
+          ? `${API_ROUTES.MY_SUBMISSIONS}?limit=10`
+          : `${API_ROUTES.ALL_SUBMISSIONS}?username=${username}&limit=10`;
+        return axiosInstance.get(subsUrl);
       })
-      .then((r) => setSubmissions(r.data.results || r.data || []))
+      .then((r) => {
+        // ListAPIView returns paginated { results: [...] } or plain array
+        const payload = r.data?.data || r.data;
+        setSubmissions(payload?.results || payload || []);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [username, isOwnProfile]);

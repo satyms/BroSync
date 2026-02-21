@@ -37,12 +37,19 @@ export default function ContestDetailPage() {
 
   const handleJoin = async () => {
     setJoining(true);
+    // For private contests, prompt for join code
+    let body = {};
+    if (contest.visibility === 'private') {
+      const code = window.prompt('This is a private contest. Enter the join code:');
+      if (!code) { setJoining(false); return; }
+      body = { join_code: code };
+    }
     try {
-      await contestsService.joinContest(slug);
+      await contestsService.joinContest(slug, body);
       toast.success('You have joined the contest!');
       setContest((c) => ({ ...c, user_joined: true }));
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to join');
+      toast.error(err.response?.data?.error?.message || 'Failed to join contest');
     } finally {
       setJoining(false);
     }
