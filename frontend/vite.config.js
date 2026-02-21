@@ -20,12 +20,11 @@ export default defineConfig({
     proxy: {
       '/api': {
         // Use explicit 127.0.0.1 to avoid Node 18+ resolving localhost→::1 (IPv6)
-        // VITE_BACKEND_URL env var overrides this in Docker prod
-        target: process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8001',
+        target: process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
       '/ws': {
-        target: process.env.VITE_WS_BACKEND_URL || 'ws://127.0.0.1:8001',
+        target: process.env.VITE_WS_BACKEND_URL || 'ws://127.0.0.1:8000',
         ws: true,
       },
     },

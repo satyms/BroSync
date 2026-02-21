@@ -23,6 +23,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Role(models.TextChoices):
         ADMIN = "admin", "Admin"
         USER = "user", "User"
+        ORGANIZER = "organizer", "Organizer"
 
     # Primary key
     id = models.UUIDField(
@@ -102,3 +103,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_admin(self):
         """Check if user has admin role."""
         return self.role == self.Role.ADMIN
+
+    @property
+    def is_organizer(self):
+        """Check if user has organizer role."""
+        return self.role == self.Role.ORGANIZER

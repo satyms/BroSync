@@ -36,6 +36,23 @@ export const API_ROUTES = {
   // Leaderboard
   GLOBAL_LEADERBOARD: '/leaderboard/',
 
+  // Organizer
+  ORG_SETUP: '/organizer/setup/',
+  ORG_PROFILE: '/organizer/profile/',
+  ORG_DASHBOARD: '/organizer/dashboard/',
+  ORG_CONTESTS: '/organizer/contests/',
+  ORG_CONTEST_DETAIL: (id) => `/organizer/contests/${id}/`,
+  ORG_CONTEST_PROBLEMS: (id) => `/organizer/contests/${id}/problems/`,
+  ORG_CONTEST_REMOVE_PROBLEM: (cid, pid) => `/organizer/contests/${cid}/problems/${pid}/`,
+  ORG_CONTEST_GENERATE_CODE: (id) => `/organizer/contests/${id}/generate-code/`,
+  ORG_PARTICIPANTS: (id) => `/organizer/contests/${id}/participants/`,
+  ORG_DISQUALIFY: (cid, pid) => `/organizer/contests/${cid}/participants/${pid}/disqualify/`,
+  ORG_PROBLEMS: '/organizer/problems/',
+  ORG_PROBLEM_DETAIL: (id) => `/organizer/problems/${id}/`,
+  ORG_PROBLEM_TEST_CASES: (id) => `/organizer/problems/${id}/test-cases/`,
+  ORG_TEST_CASE_DETAIL: (id) => `/organizer/test-cases/${id}/`,
+  ORG_CATEGORIES: '/organizer/categories/',
+
   // Notifications
   NOTIFICATIONS: '/notifications/',
   NOTIFICATION_READ: (id) => `/notifications/${id}/read/`,

@@ -20,4 +20,5 @@ urlpatterns = [
     path(f"{API_V1}submissions/", include("apps.submissions.urls", namespace="submissions")),
     path(f"{API_V1}contests/", include("apps.contests.urls", namespace="contests")),
     path(f"{API_V1}leaderboard/", include("apps.leaderboard.urls", namespace="leaderboard")),
+    path(f"{API_V1}organizer/", include("apps.organizer.urls", namespace="organizer")),
 ]
