@@ -22,13 +22,20 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// ── Auth endpoints that should NOT trigger token refresh on 401 ──────────────
+const AUTH_ENDPOINTS = ['/auth/login/', '/auth/register/', '/auth/token/refresh/'];
+
 // ── Response interceptor: handle 401 → refresh token ────────────────────────
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl = originalRequest?.url || '';
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip token refresh for auth endpoints — 401 here means bad credentials, not expired token
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((ep) => requestUrl.endsWith(ep));
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem('refresh_token');
 
