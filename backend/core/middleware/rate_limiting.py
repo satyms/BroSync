@@ -84,7 +84,7 @@ class RateLimitMiddleware:
 
     @staticmethod
     def _is_rate_limited(key: str, rate: int, window: int) -> bool:
-        """Sliding window counter using Redis INCR + EXPIRE."""
+        """Sliding window counter. Works with any Django cache backend."""
         current_window = int(time.time() // window)
         cache_key = f"{key}:{current_window}"
         count = cache.get(cache_key, 0)
@@ -92,8 +92,11 @@ class RateLimitMiddleware:
         if count >= rate:
             return True
 
-        # Increment counter
-        new_count = cache.incr(cache_key)
-        if new_count == 1:
-            cache.expire(cache_key, window)
+        # Increment counter (set key first if it doesn't exist)
+        try:
+            new_count = cache.incr(cache_key)
+        except ValueError:
+            # Key doesn't exist yet — initialize it
+            cache.set(cache_key, 1, timeout=window)
+            new_count = 1
         return False
