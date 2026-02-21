@@ -1,0 +1,8 @@
+"""Leaderboard App Configuration."""
+from django.apps import AppConfig
+
+
+class LeaderboardConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.leaderboard"
+    verbose_name = "Leaderboard"
