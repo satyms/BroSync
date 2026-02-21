@@ -12,7 +12,10 @@ export const loginUser = createAsyncThunk('auth/login', async (credentials, { re
     localStorage.setItem('refresh_token', refresh);
     return user;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.detail || 'Login failed');
+    const errData = err.response?.data;
+    // Backend returns: { success: false, error: { code, message } }
+    const message = errData?.error?.message || errData?.detail || 'Login failed';
+    return rejectWithValue(message);
   }
 });
 
