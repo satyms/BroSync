@@ -221,3 +221,21 @@ class UserDetailView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
+
+
+class PublicProfileByUsernameView(APIView):
+    """
+    GET /api/v1/auth/users/<username>/profile/
+    Retrieve any user's public profile by username.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username, is_active=True)
+        except User.DoesNotExist:
+            from core.utils.responses import error_response
+            return error_response("User not found.", status.HTTP_404_NOT_FOUND)
+        serializer = UserProfileSerializer(user)
+        return success_response(data=serializer.data)

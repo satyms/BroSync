@@ -29,4 +29,5 @@ urlpatterns = [
 
     # User lookup
     path("users/<uuid:pk>/", views.UserDetailView.as_view(), name="user-detail"),
+    path("users/<str:username>/profile/", views.PublicProfileByUsernameView.as_view(), name="user-profile-by-username"),
 ]

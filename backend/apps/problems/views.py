@@ -64,6 +64,86 @@ class ProblemDetailView(APIView):
         return success_response(serializer.data)
 
 
+class ProblemSolversView(APIView):
+    """
+    GET /api/v1/problems/<slug>/solvers/
+    Returns a leaderboard of users who solved this problem.
+    Ranked by: who solved it first (earliest accepted submission).
+    Each entry includes: rank, username, language, runtime, attempts, solved_at.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, slug):
+        from apps.submissions.models import Submission
+        from django.db.models import Min, Count
+
+        try:
+            problem = Problem.objects.get(slug=slug, is_published=True)
+        except Problem.DoesNotExist:
+            return error_response("Problem not found.", status_code=404)
+
+        # Step 1: Per user — find the earliest accepted submission time (max 200 users)
+        user_first_solve = (
+            Submission.objects
+            .filter(problem=problem, status="accepted")
+            .values("user_id", "user__username", "user__first_name", "user__last_name")
+            .annotate(solved_at=Min("submitted_at"))
+            .order_by("solved_at")[:200]
+        )
+
+        if not user_first_solve:
+            return success_response(data=[])
+
+        user_ids = [e["user_id"] for e in user_first_solve]
+        solved_at_map = {e["user_id"]: e["solved_at"] for e in user_first_solve}
+        user_info_map = {
+            e["user_id"]: {
+                "username": e["user__username"],
+                "first_name": e["user__first_name"],
+                "last_name": e["user__last_name"],
+            }
+            for e in user_first_solve
+        }
+
+        # Step 2: Get language + runtime for each user's first accepted submission
+        best_subs = {}
+        for sub in (
+            Submission.objects
+            .filter(problem=problem, status="accepted", user_id__in=user_ids)
+            .values("user_id", "language", "execution_time_ms", "submitted_at")
+            .order_by("submitted_at")
+        ):
+            if sub["user_id"] not in best_subs:
+                best_subs[sub["user_id"]] = sub
+
+        # Step 3: Total attempts (all submissions) per user for this problem
+        attempts_map = {
+            e["user_id"]: e["total"]
+            for e in Submission.objects
+            .filter(problem=problem, user_id__in=user_ids)
+            .values("user_id")
+            .annotate(total=Count("id"))
+        }
+
+        # Build ranked result
+        solvers = []
+        for rank, uid in enumerate(user_ids, 1):
+            info = user_info_map.get(uid, {})
+            sub = best_subs.get(uid, {})
+            solvers.append({
+                "rank": rank,
+                "username": info.get("username", ""),
+                "first_name": info.get("first_name", ""),
+                "last_name": info.get("last_name", ""),
+                "language": sub.get("language", ""),
+                "execution_time_ms": sub.get("execution_time_ms"),
+                "solved_at": solved_at_map.get(uid),
+                "attempts": attempts_map.get(uid, 1),
+            })
+
+        return success_response(data=solvers)
+
+
 class CategoryListView(generics.ListAPIView):
     """
     GET /api/v1/problems/categories/

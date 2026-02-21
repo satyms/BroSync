@@ -21,11 +21,13 @@ export const API_ROUTES = {
   PROBLEM_DETAIL: (slug) => `/problems/${slug}/`,
   CATEGORIES: '/problems/categories/',
   RUN_CODE: '/problems/run/',
+  PROBLEM_SOLVERS: (slug) => `/problems/${slug}/solvers/`,
 
   // Submissions
   SUBMISSIONS: '/submissions/',
   SUBMISSION_DETAIL: (id) => `/submissions/${id}/`,
   MY_SUBMISSIONS: '/submissions/me/',
+  ALL_SUBMISSIONS: '/submissions/all/',
 
   // Contests
   CONTESTS: '/contests/',

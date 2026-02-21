@@ -14,6 +14,7 @@ urlpatterns = [
     path("categories/", views.CategoryListView.as_view(), name="categories"),
     path("run/", views.RunCodeView.as_view(), name="run-code"),
     path("<slug:slug>/", views.ProblemDetailView.as_view(), name="detail"),
+    path("<slug:slug>/solvers/", views.ProblemSolversView.as_view(), name="solvers"),
 
     # Admin endpoints
     path("admin/create/", views.ProblemCreateView.as_view(), name="admin-create"),
