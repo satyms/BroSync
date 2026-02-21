@@ -4,10 +4,17 @@ Contests - Models
 Contest management with timer-based contests, participation, and penalty system.
 """
 
+import random
+import string
 import uuid
 
 from django.db import models
 from django.utils import timezone
+
+
+def _generate_join_code():
+    """Generate a random 8-char alphanumeric join code."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
 
 class Contest(models.Model):
@@ -18,6 +25,10 @@ class Contest(models.Model):
         UPCOMING = "upcoming", "Upcoming"
         ACTIVE = "active", "Active"
         ENDED = "ended", "Ended"
+
+    class Visibility(models.TextChoices):
+        PUBLIC = "public", "Public"
+        PRIVATE = "private", "Private"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200)
@@ -38,6 +49,13 @@ class Contest(models.Model):
         default=20, help_text="Penalty time in minutes for a wrong submission.",
     )
     max_participants = models.PositiveIntegerField(default=0, help_text="0 = unlimited.")
+    visibility = models.CharField(
+        max_length=10, choices=Visibility.choices, default=Visibility.PUBLIC, db_index=True,
+    )
+    join_code = models.CharField(
+        max_length=12, blank=True, default="",
+        help_text="Unique code for joining private contests.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -50,6 +68,12 @@ class Contest(models.Model):
 
     def __str__(self):
         return self.title
+
+    def generate_join_code(self):
+        """Regenerate a unique join code for this contest."""
+        self.join_code = _generate_join_code()
+        self.save(update_fields=["join_code"])
+        return self.join_code
 
     @property
     def is_active(self):

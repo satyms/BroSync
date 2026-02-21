@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell, Search, Menu, ChevronDown,
-  User, Settings, LogOut, Code2, Sun, Moon,
+  User, Settings, LogOut, Code2, Sun, Moon, Building2, LayoutDashboard,
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '@features/auth/authSlice';
@@ -143,6 +143,29 @@ export default function Navbar() {
                   <Settings className="w-4 h-4" />
                   Settings
                 </Link>
+
+                {/* Organizer section */}
+                <div className="border-t border-[#CBD5E1] dark:border-[#334155] my-1" />
+                {(user?.role === 'organizer' || user?.role === 'admin') ? (
+                  <Link
+                    to="/organizer/dashboard"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-all duration-150"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Organizer Panel
+                  </Link>
+                ) : (
+                  <Link
+                    to="/organizer/setup"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#475569] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#E2E8F0] hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-all duration-150"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    Become an Organizer
+                  </Link>
+                )}
+
                 <div className="border-t border-[#CBD5E1] dark:border-[#334155] my-1" />
                 <button
                   onClick={handleLogout}

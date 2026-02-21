@@ -18,12 +18,12 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        // Use VITE_BACKEND_URL env var for Docker; falls back to localhost for local dev
-        target: process.env.VITE_BACKEND_URL || 'http://localhost:8000',
+        // Use explicit 127.0.0.1 to avoid Node 18+ resolving localhost→::1 (IPv6)
+        target: process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
       '/ws': {
-        target: process.env.VITE_WS_BACKEND_URL || 'ws://localhost:8000',
+        target: process.env.VITE_WS_BACKEND_URL || 'ws://127.0.0.1:8000',
         ws: true,
       },
     },
