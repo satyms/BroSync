@@ -35,7 +35,7 @@ def execute_submission(self, submission_id: str):
     """
     from apps.submissions.models import Submission
     from apps.problems.models import TestCase
-    from .sandbox import DockerSandbox
+    from .factory import get_sandbox
     from .services import JudgeService
 
     try:
@@ -59,7 +59,7 @@ def execute_submission(self, submission_id: str):
     )
 
     try:
-        sandbox = DockerSandbox()
+        sandbox = get_sandbox()
         test_cases = TestCase.objects.filter(problem=submission.problem).order_by("order")
         total = test_cases.count()
         passed = 0

@@ -4,19 +4,28 @@ Judge - Docker Sandbox Executor
 Executes user code inside isolated Docker containers with strict security limits.
 
 Security measures:
-- Non-root user inside container
+- Non-root user inside container (UID 1000)
 - Network disabled
-- Memory limited
-- CPU limited
-- Read-only filesystem
+- Memory limited (configurable, default 128MB)
+- CPU limited (configurable, default 0.5 cores)
+- No privilege escalation, all capabilities dropped
 - Auto-remove after execution
-- Execution timeout
+- Execution timeout (configurable, default 10 seconds)
+
+How it works:
+1. User code + stdin are written to a temp directory on the host
+2. A fresh Docker container is created with the sandbox image
+3. The temp directory is bind-mounted into /sandbox inside the container
+4. The container executes the code with stdin piped via the input file
+5. stdout/stderr are captured, execution time and memory usage are recorded
+6. The container is always force-removed after execution (finally block)
 """
 
 import logging
+import os
+import shutil
 import tempfile
 import time
-from pathlib import Path
 
 import docker
 from django.conf import settings
@@ -30,11 +39,31 @@ from core.exceptions.custom import (
 
 logger = logging.getLogger("judge")
 
+# File names and execution commands per language
+LANGUAGE_CONFIG = {
+    "python": {
+        "filename": "solution.py",
+        "command": "python3 /sandbox/solution.py < /sandbox/input.txt",
+    },
+    "cpp": {
+        "filename": "solution.cpp",
+        "command": "cd /tmp && cp /sandbox/solution.cpp . && g++ -O2 -std=c++17 -o solution solution.cpp && ./solution < /sandbox/input.txt",
+    },
+    "java": {
+        "filename": "Solution.java",
+        "command": "cd /tmp && cp /sandbox/Solution.java . && javac Solution.java && java -cp /tmp Solution < /sandbox/input.txt",
+    },
+    "javascript": {
+        "filename": "solution.js",
+        "command": "node /sandbox/solution.js < /sandbox/input.txt",
+    },
+}
+
 
 class DockerSandbox:
     """
     Manages secure code execution inside Docker containers.
-    Each execution gets a fresh, isolated container.
+    Each execution gets a fresh, isolated container that is destroyed after use.
     """
 
     def __init__(self):
@@ -65,33 +94,43 @@ class DockerSandbox:
             MemoryLimitExceeded: If execution exceeds memory limit.
             ServiceUnavailable: If Docker is unavailable.
         """
-        image = self.config["IMAGES"].get(language)
-        if not image:
+        lang_config = LANGUAGE_CONFIG.get(language)
+        if not lang_config:
             raise CodeExecutionError(f"Unsupported language: {language}")
 
+        image = self.config["IMAGES"].get(language)
+        if not image:
+            raise CodeExecutionError(f"No Docker image configured for: {language}")
+
         container = None
-        start_time = time.monotonic()
+        sandbox_dir = None
 
         try:
-            # Write code to a temporary file
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=self._get_extension(language), delete=False
-            ) as code_file:
-                code_file.write(code)
-                code_path = code_file.name
+            # 1. Create a temp directory with user code + stdin
+            sandbox_dir = tempfile.mkdtemp(prefix="brosync_sandbox_")
+            code_file = os.path.join(sandbox_dir, lang_config["filename"])
+            input_file = os.path.join(sandbox_dir, "input.txt")
 
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".txt", delete=False
-            ) as input_file:
-                input_file.write(stdin)
-                input_path = input_file.name
+            with open(code_file, "w", encoding="utf-8") as f:
+                f.write(code)
+            with open(input_file, "w", encoding="utf-8") as f:
+                f.write(stdin)
 
-            # Run the container with strict security constraints
+            # Make files readable by sandbox user (UID 1000)
+            os.chmod(sandbox_dir, 0o755)
+            os.chmod(code_file, 0o644)
+            os.chmod(input_file, 0o644)
+
+            start_time = time.monotonic()
+
+            # 2. Run the container with strict security constraints
             container = self.client.containers.run(
                 image=image,
-                command=self._build_command(language),
+                command=["sh", "-c", lang_config["command"]],
                 detach=True,
-                # Security: non-root user
+                # Mount code directory as read-only
+                volumes={sandbox_dir: {"bind": "/sandbox", "mode": "ro"}},
+                # Security: run as non-root user
                 user="1000:1000",
                 # Security: disable networking
                 network_disabled=self.config["NETWORK_DISABLED"],
@@ -99,39 +138,37 @@ class DockerSandbox:
                 mem_limit=self.config["MEMORY_LIMIT"],
                 # Security: CPU limit
                 nano_cpus=int(self.config["CPU_LIMIT"] * 1e9),
-                # Security: read-only filesystem
-                read_only=True,
-                # Security: temporary writable dirs for execution
-                tmpfs={"/tmp": "size=64M,noexec"},
-                # Security: auto-remove
+                # Security: auto-remove disabled (we remove manually after getting logs)
                 auto_remove=False,
                 # Security: no privileged mode, drop all capabilities
                 privileged=False,
                 cap_drop=["ALL"],
                 # Security: no new privileges
                 security_opt=["no-new-privileges"],
-                # Stdin
-                stdin_open=True,
-                # Labels for tracking
+                # Writable /tmp for compilation artifacts (C++/Java)
+                tmpfs={"/tmp": "size=64M"},
+                # Working directory
+                working_dir="/sandbox",
+                # Labels for tracking/cleanup
                 labels={"brosync": "sandbox", "language": language},
             )
 
-            # Attach stdin data
-            sock = container.attach_socket(params={"stdin": True, "stream": True})
-            sock._sock.sendall(stdin.encode("utf-8"))
-            sock._sock.close()
-
-            # Wait for completion with timeout
-            result = container.wait(timeout=self.config["TIMEOUT"])
+            # 3. Wait for container to finish (with timeout)
+            timeout_seconds = self.config["TIMEOUT"]
+            result = container.wait(timeout=timeout_seconds)
             exit_code = result.get("StatusCode", -1)
-
-            # Get output
-            stdout = container.logs(stdout=True, stderr=False).decode("utf-8", errors="replace")
-            stderr = container.logs(stdout=False, stderr=True).decode("utf-8", errors="replace")
 
             execution_time_ms = int((time.monotonic() - start_time) * 1000)
 
-            # Get container stats for memory usage
+            # 4. Capture output
+            stdout = container.logs(stdout=True, stderr=False).decode(
+                "utf-8", errors="replace"
+            )
+            stderr = container.logs(stdout=False, stderr=True).decode(
+                "utf-8", errors="replace"
+            )
+
+            # 5. Get peak memory usage
             memory_used_kb = self._get_memory_usage(container)
 
             logger.info(
@@ -152,50 +189,28 @@ class DockerSandbox:
             raise CodeExecutionError(f"Execution failed: {str(e)}")
 
         except Exception as e:
-            if "timed out" in str(e).lower() or "read timeout" in str(e).lower():
+            error_msg = str(e).lower()
+            if "timed out" in error_msg or "read timeout" in error_msg:
                 logger.warning("Execution timeout for %s", language)
                 raise TimeLimitExceeded()
-            if "oom" in str(e).lower():
+            if "oom" in error_msg:
                 logger.warning("OOM killed for %s", language)
                 raise MemoryLimitExceeded()
             logger.error("Unexpected execution error: %s", str(e), exc_info=True)
             raise CodeExecutionError(f"Execution error: {str(e)}")
 
         finally:
-            # Cleanup: always remove the container
+            # Always cleanup: remove container and temp directory
             if container:
                 try:
                     container.remove(force=True)
                 except Exception:
                     pass
-            # Cleanup temp files
-            for path in [code_path, input_path]:
+            if sandbox_dir:
                 try:
-                    Path(path).unlink(missing_ok=True)
+                    shutil.rmtree(sandbox_dir, ignore_errors=True)
                 except Exception:
                     pass
-
-    @staticmethod
-    def _get_extension(language: str) -> str:
-        """Get file extension for the given language."""
-        extensions = {
-            "python": ".py",
-            "cpp": ".cpp",
-            "java": ".java",
-            "javascript": ".js",
-        }
-        return extensions.get(language, ".txt")
-
-    @staticmethod
-    def _build_command(language: str) -> str:
-        """Build execution command for the language."""
-        commands = {
-            "python": "python3 /tmp/solution.py < /tmp/input.txt",
-            "cpp": "cd /tmp && g++ -o solution solution.cpp && ./solution < input.txt",
-            "java": "cd /tmp && javac Solution.java && java Solution < input.txt",
-            "javascript": "node /tmp/solution.js < /tmp/input.txt",
-        }
-        return commands.get(language, "echo 'Unsupported language'")
 
     @staticmethod
     def _get_memory_usage(container) -> int:
@@ -206,3 +221,19 @@ class DockerSandbox:
             return memory_bytes // 1024
         except Exception:
             return 0
+
+    def verify_images(self) -> dict:
+        """
+        Check which sandbox images are available locally.
+        Returns dict of {language: bool} indicating availability.
+        """
+        result = {}
+        for lang, image_name in self.config["IMAGES"].items():
+            try:
+                self.client.images.get(image_name)
+                result[lang] = True
+            except docker.errors.ImageNotFound:
+                result[lang] = False
+            except Exception:
+                result[lang] = False
+        return result

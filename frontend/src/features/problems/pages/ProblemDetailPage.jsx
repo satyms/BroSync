@@ -15,6 +15,7 @@ import {
   PlayIcon,
   ArrowPathIcon,
   ChevronDownIcon,
+  PaperAirplaneIcon,
 } from '@heroicons/react/24/outline';
 
 const DEFAULT_CODE = {
@@ -28,16 +29,27 @@ export default function ProblemDetailPage() {
   const { slug } = useParams();
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('description'); // description | submissions
+  const [activeTab, setActiveTab] = useState('description');
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState(DEFAULT_CODE.python);
   const [submitting, setSubmitting] = useState(false);
+  const [running, setRunning] = useState(false);
   const [latestResult, setLatestResult] = useState(null);
+  const [runOutput, setRunOutput] = useState(null);
   const [mySubmissions, setMySubmissions] = useState([]);
+  const [stdin, setStdin] = useState('');
+  const [activeConsoleTab, setActiveConsoleTab] = useState('input');
 
   useEffect(() => {
     problemsService.getProblem(slug)
-      .then(setProblem)
+      .then((p) => {
+        setProblem(p);
+        // Pre-fill stdin with the first sample test case input
+        const firstSample = p?.sample_test_cases?.[0];
+        if (firstSample?.input_data) {
+          setStdin(firstSample.input_data);
+        }
+      })
       .catch(() => toast.error('Problem not found'))
       .finally(() => setLoading(false));
   }, [slug]);
@@ -45,6 +57,30 @@ export default function ProblemDetailPage() {
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
     setCode(DEFAULT_CODE[lang] || '');
+    setRunOutput(null);
+  };
+
+  const handleRun = async () => {
+    if (!code.trim()) return toast.error('Write some code first!');
+    setRunning(true);
+    setActiveConsoleTab('output');
+    setRunOutput(null);
+    try {
+      const result = await problemsService.runCode({ language, code, stdin });
+      setRunOutput(result);
+      // If code needs stdin but none was provided, guide the user
+      if (result.stderr && result.stderr.includes('EOFError') && !stdin.trim()) {
+        setActiveConsoleTab('input');
+        toast('Your code reads from stdin — use the Stdin tab or "Load into Run" on a sample, then Run again.', {
+          icon: '💡',
+          duration: 5000,
+        });
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || 'Failed to run code');
+    } finally {
+      setRunning(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -63,7 +99,7 @@ export default function ProblemDetailPage() {
       setMySubmissions((prev) => [sub, ...prev]);
       setActiveTab('result');
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Submission failed');
+      toast.error(err.response?.data?.error?.message || err.response?.data?.detail || 'Submission failed');
     } finally {
       setSubmitting(false);
     }
@@ -118,7 +154,7 @@ export default function ProblemDetailPage() {
 
         <div className="flex-1 overflow-y-auto p-5">
           {activeTab === 'description' && (
-            <ProblemDescription problem={problem} />
+            <ProblemDescription problem={problem} onLoadSample={(input) => { setStdin(input); setActiveConsoleTab('input'); }} />
           )}
           {activeTab === 'submissions' && (
             <SubmissionsTab submissions={mySubmissions} />
@@ -158,22 +194,36 @@ export default function ProblemDetailPage() {
             >
               <ArrowPathIcon className="w-4 h-4" />
             </button>
+            {/* Run button */}
+            <button
+              onClick={handleRun}
+              disabled={running || submitting}
+              className="flex items-center gap-1.5 bg-bg-tertiary hover:bg-bg-hover disabled:opacity-60 text-green-400 border border-green-800 hover:border-green-600 text-sm font-mono px-3 py-1.5 rounded-lg transition-colors"
+              title="Run code with custom input"
+            >
+              {running ? (
+                <><Spinner size="sm" /> Running...</>
+              ) : (
+                <><PlayIcon className="w-3.5 h-3.5" /> Run</>
+              )}
+            </button>
+            {/* Submit button */}
             <button
               onClick={handleSubmit}
-              disabled={submitting}
-              className="flex items-center gap-2 bg-brand-blue hover:bg-blue-500 disabled:opacity-60 text-white text-sm font-mono px-4 py-1.5 rounded-lg transition-colors"
+              disabled={submitting || running}
+              className="flex items-center gap-1.5 bg-brand-blue hover:bg-blue-500 disabled:opacity-60 text-white text-sm font-mono px-4 py-1.5 rounded-lg transition-colors"
             >
               {submitting ? (
                 <><Spinner size="sm" /> Submitting...</>
               ) : (
-                <><PlayIcon className="w-4 h-4" /> Submit</>
+                <><PaperAirplaneIcon className="w-3.5 h-3.5" /> Submit</>
               )}
             </button>
           </div>
         </div>
 
         {/* Monaco Editor */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           <Editor
             height="100%"
             language={LANGUAGES.find((l) => l.value === language)?.monacoLang || 'python'}
@@ -195,6 +245,86 @@ export default function ProblemDetailPage() {
             }}
           />
         </div>
+
+        {/* ── Console Panel ─────────────────────────────── */}
+        <div className="h-44 flex-shrink-0 border-t border-border-primary flex flex-col">
+          {/* Console tab bar */}
+          <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-border-primary flex-shrink-0 bg-bg-primary">
+            {['input', 'output'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveConsoleTab(tab)}
+                className={`px-3 py-1 text-xs font-mono rounded-md transition-colors capitalize ${
+                  activeConsoleTab === tab
+                    ? 'bg-bg-hover text-text-primary'
+                    : 'text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                {tab === 'input' ? 'stdin' : 'output'}
+                {tab === 'output' && runOutput && (
+                  <span className={`ml-1.5 w-1.5 h-1.5 rounded-full inline-block ${
+                    runOutput.exit_code === 0 ? 'bg-green-400' : 'bg-red-400'
+                  }`} />
+                )}
+              </button>
+            ))}
+            {running && (
+              <span className="ml-auto flex items-center gap-1.5 text-xs text-brand-blue font-mono">
+                <Spinner size="sm" /> executing…
+              </span>
+            )}
+            {runOutput && !running && (
+              <span className="ml-auto text-xs text-text-muted font-mono">
+                {runOutput.execution_time_ms}ms · exit {runOutput.exit_code}
+              </span>
+            )}
+          </div>
+
+          {/* Console content */}
+          <div className="flex-1 overflow-auto p-3 bg-bg-primary">
+            {activeConsoleTab === 'input' ? (
+              <div className="flex flex-col h-full gap-1">
+                <textarea
+                  value={stdin}
+                  onChange={(e) => setStdin(e.target.value)}
+                  placeholder={`Provide input your code reads via input() / scanf / readline…\nExample: 3 5`}
+                  className="flex-1 w-full bg-transparent text-text-primary font-mono text-xs resize-none focus:outline-none placeholder-text-muted"
+                  spellCheck={false}
+                />
+                <p className="text-[10px] text-text-muted font-mono flex-shrink-0">
+                  Each line = one input() call. E.g. <code className="bg-bg-hover px-1 rounded">3 5</code> for <code className="bg-bg-hover px-1 rounded">a, b = map(int, input().split())</code>
+                </p>
+              </div>
+            ) : (
+              <div className="font-mono text-xs space-y-1">
+                {running ? (
+                  <span className="text-text-muted animate-pulse">Running your code…</span>
+                ) : runOutput ? (
+                  <>
+                    {runOutput.stdout ? (
+                      <pre className="text-green-300 whitespace-pre-wrap">{runOutput.stdout}</pre>
+                    ) : null}
+                    {runOutput.stderr ? (
+                      <>
+                        <pre className="text-red-400 whitespace-pre-wrap">{runOutput.stderr}</pre>
+                        {runOutput.stderr.includes('EOFError') && (
+                          <div className="mt-2 px-2 py-1.5 rounded bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-[10px] font-mono">
+                            💡 Your code calls <code>input()</code> but stdin is empty. Click the <strong>Stdin</strong> tab and type your input (or use <strong>Load into Run</strong> on a sample in the Description tab), then click Run again.
+                          </div>
+                        )}
+                      </>
+                    ) : null}
+                    {!runOutput.stdout && !runOutput.stderr && (
+                      <span className="text-text-muted">(no output)</span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-text-muted">Click Run to see output here.</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -202,7 +332,7 @@ export default function ProblemDetailPage() {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function ProblemDescription({ problem }) {
+function ProblemDescription({ problem, onLoadSample }) {
   return (
     <div className="space-y-5">
       {/* Title + meta */}
@@ -263,9 +393,20 @@ function ProblemDescription({ problem }) {
       )}
 
       {/* Sample test cases */}
-      {problem.test_cases?.filter((tc) => tc.is_sample).map((tc, i) => (
+      {problem.sample_test_cases?.map((tc, i) => (
         <div key={tc.id} className="space-y-2">
-          <h3 className="text-text-primary font-semibold text-sm">Example {i + 1}</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-text-primary font-semibold text-sm">Example {i + 1}</h3>
+            {onLoadSample && (
+              <button
+                onClick={() => onLoadSample(tc.input_data)}
+                className="text-[10px] font-mono text-brand-blue hover:text-blue-400 border border-brand-blue/40 hover:border-blue-400 px-2 py-0.5 rounded transition-colors"
+                title="Load this input into the Run stdin panel"
+              >
+                Load into Run
+              </button>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-text-muted text-xs font-mono mb-1 uppercase">Input</p>

@@ -20,6 +20,7 @@ export const API_ROUTES = {
   PROBLEMS: '/problems/',
   PROBLEM_DETAIL: (slug) => `/problems/${slug}/`,
   CATEGORIES: '/problems/categories/',
+  RUN_CODE: '/problems/run/',
 
   // Submissions
   SUBMISSIONS: '/submissions/',

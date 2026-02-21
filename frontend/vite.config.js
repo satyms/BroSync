@@ -15,15 +15,16 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    strictPort: false,
     host: '0.0.0.0',
     proxy: {
       '/api': {
         // Use VITE_BACKEND_URL env var for Docker; falls back to localhost for local dev
-        target: process.env.VITE_BACKEND_URL || 'http://localhost:8000',
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:8001',
         changeOrigin: true,
       },
       '/ws': {
-        target: process.env.VITE_WS_BACKEND_URL || 'ws://localhost:8000',
+        target: process.env.VITE_WS_BACKEND_URL || 'ws://localhost:8001',
         ws: true,
       },
     },
