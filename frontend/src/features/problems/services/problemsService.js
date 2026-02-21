@@ -12,11 +12,17 @@ export const problemsService = {
    * Get a single problem by slug.
    */
   getProblem: (slug) =>
-    axiosInstance.get(API_ROUTES.PROBLEM_DETAIL(slug)).then((r) => r.data),
+    axiosInstance.get(API_ROUTES.PROBLEM_DETAIL(slug)).then((r) => r.data?.data || r.data),
 
   /**
    * Get all categories.
    */
   getCategories: () =>
     axiosInstance.get(API_ROUTES.CATEGORIES).then((r) => r.data),
+
+  /**
+   * Run code in playground mode (no submission, no judging).
+   */
+  runCode: (data) =>
+    axiosInstance.post(API_ROUTES.RUN_CODE, data).then((r) => r.data?.data || r.data),
 };
