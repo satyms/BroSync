@@ -7,12 +7,12 @@ Broadcasts real-time leaderboard updates to connected clients.
 import json
 import logging
 
-from channels.generic.websocket import AsyncWebSocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 logger = logging.getLogger("apps")
 
 
-class LeaderboardConsumer(AsyncWebSocketConsumer):
+class LeaderboardConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer for contest leaderboard.
     Clients join a contest-specific group and receive live score updates.

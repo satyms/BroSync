@@ -8,12 +8,12 @@ Each user connects to their own notification channel.
 import json
 import logging
 
-from channels.generic.websocket import AsyncWebSocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 logger = logging.getLogger("apps")
 
 
-class NotificationConsumer(AsyncWebSocketConsumer):
+class NotificationConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer for per-user notifications.
     Each authenticated user joins a group named 'user_{user_id}'.

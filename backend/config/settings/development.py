@@ -22,14 +22,13 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 # DATABASE (can use SQLite for quick dev)
 # ========================================
 
-# Uses PostgreSQL from base.py by default.
-# Uncomment below for SQLite during early development:
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
+# Using SQLite for local development (no PostgreSQL needed)
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 # ========================================
 # EMAIL BACKEND (Console for dev)
@@ -55,12 +54,19 @@ CSRF_COOKIE_SECURE = False
 # CACHES (Local memory for dev)
 # ========================================
 
-# Uncomment to use in-memory cache instead of Redis during dev
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-#     }
-# }
+# In-memory cache (no Redis needed for local dev)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
+
+# In-memory Channel Layers (no Redis needed for local dev)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
 
 # ========================================
 # REST FRAMEWORK (Add browsable API)
@@ -83,4 +89,4 @@ REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {  # noqa: F405
 # ========================================
 
 LOGGING["loggers"]["apps"]["level"] = "DEBUG"  # noqa: F405
-LOGGING["loggers"]["django"]["level"] = "DEBUG"  # noqa: F405
+LOGGING["loggers"]["django"]["level"] = "WARNING"  # noqa: F405
