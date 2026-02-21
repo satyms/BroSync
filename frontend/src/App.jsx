@@ -1,0 +1,114 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Provider, useSelector } from 'react-redux';
+import { Toaster } from 'react-hot-toast';
+import { Suspense, useEffect } from 'react';
+import store from './store';
+import AppInitializer from './AppInitializer';
+import MainLayout from '@shared/components/Layout/MainLayout';
+import ProtectedRoute from '@shared/components/ProtectedRoute';
+import { PageLoader } from '@shared/components/ui/Spinner';
+
+// ── Pages ─────────────────────────────────────────────────────────────────────
+import LandingPage from '@features/landing/LandingPage';
+import LoginPage from '@features/auth/pages/LoginPage';
+import RegisterPage from '@features/auth/pages/RegisterPage';
+import DashboardPage from '@features/dashboard/pages/DashboardPage';
+import ProblemsPage from '@features/problems/pages/ProblemsPage';
+import ProblemDetailPage from '@features/problems/pages/ProblemDetailPage';
+import SubmissionsPage from '@features/submissions/pages/SubmissionsPage';
+import ContestsPage from '@features/contests/pages/ContestsPage';
+import ContestDetailPage from '@features/contests/pages/ContestDetailPage';
+import LeaderboardPage from '@features/leaderboard/pages/LeaderboardPage';
+import ProfilePage from '@features/profile/pages/ProfilePage';
+import SettingsPage from '@features/profile/pages/SettingsPage';
+
+// ── Layout wrapper for authenticated routes ───────────────────────────────────
+function AuthenticatedLayout({ children }) {
+  return (
+    <ProtectedRoute>
+      <MainLayout>{children}</MainLayout>
+    </ProtectedRoute>
+  );
+}
+
+function ThemedApp() {
+  const theme = useSelector((s) => s.ui.theme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
+
+  return (
+    <BrowserRouter>
+      <AppInitializer />
+      <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* ── Public ─────────────────────────── */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+            {/* ── Authenticated ───────────────────── */}
+            <Route path="/dashboard" element={<AuthenticatedLayout><DashboardPage /></AuthenticatedLayout>} />
+            <Route path="/problems" element={<AuthenticatedLayout><ProblemsPage /></AuthenticatedLayout>} />
+            <Route path="/problems/:slug" element={<AuthenticatedLayout><ProblemDetailPage /></AuthenticatedLayout>} />
+            <Route path="/submissions" element={<AuthenticatedLayout><SubmissionsPage /></AuthenticatedLayout>} />
+            <Route path="/contests" element={<AuthenticatedLayout><ContestsPage /></AuthenticatedLayout>} />
+            <Route path="/contests/:slug" element={<AuthenticatedLayout><ContestDetailPage /></AuthenticatedLayout>} />
+            <Route path="/leaderboard" element={<AuthenticatedLayout><LeaderboardPage /></AuthenticatedLayout>} />
+            <Route path="/profile/:username" element={<AuthenticatedLayout><ProfilePage /></AuthenticatedLayout>} />
+            <Route path="/settings" element={<AuthenticatedLayout><SettingsPage /></AuthenticatedLayout>} />
+
+            {/* ── Redirects ───────────────────────── */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+
+        {/* ── Toast notifications ─────────────────── */}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: '#1E293B',
+              color: '#E2E8F0',
+              border: '1px solid #334155',
+              fontFamily: '"Inter", system-ui, sans-serif',
+              fontSize: '13px',
+              borderRadius: '12px',
+            },
+            success: {
+              iconTheme: { primary: '#22C55E', secondary: '#1E293B' },
+            },
+            error: {
+              iconTheme: { primary: '#EF4444', secondary: '#1E293B' },
+            },
+          }}
+        />
+      </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <ThemedApp />
+    </Provider>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col items-center justify-center gap-4">
+      <div className="text-7xl font-bold text-blue-500">404</div>
+      <p className="text-[#475569] dark:text-[#94A3B8] text-lg">Page not found</p>
+      <a href="/" className="text-blue-500 hover:text-blue-400 text-sm font-semibold transition-colors">
+        ← Back to Home
+      </a>
+    </div>
+  );
+}
