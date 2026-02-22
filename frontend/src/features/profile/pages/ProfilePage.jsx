@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '@api/axiosInstance';
 import { API_ROUTES } from '@shared/utils/constants';
-import { DifficultyBadge, StatusBadge } from '@shared/components/ui/Badge';
+import { StatusBadge } from '@shared/components/ui/Badge';
 import { PageLoader } from '@shared/components/ui/Spinner';
 import { formatDate, formatNumber, timeAgo } from '@shared/utils/formatters';
 import ActivityMatrix from '@features/dashboard/components/ActivityMatrix';
 import StatsDonut from '@features/dashboard/components/StatsDonut';
+import BadgesShowcase from '../components/BadgesShowcase';
 import { useSelector } from 'react-redux';
 import { CalendarDaysIcon, ChatBubbleLeftIcon, TrophyIcon } from '@heroicons/react/24/outline';
 
@@ -16,11 +17,14 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activityData, setActivityData] = useState({});
+  const [activityLoading, setActivityLoading] = useState(true);
 
   const isOwnProfile = currentUser?.username === username;
 
   useEffect(() => {
     setLoading(true);
+    setActivityLoading(true);
 
     // For own profile use /auth/profile/, for others use /auth/users/<username>/profile/
     const profileRequest = isOwnProfile
@@ -29,7 +33,6 @@ export default function ProfilePage() {
 
     profileRequest
       .then((r) => {
-        // All profile endpoints wrap: { success, message, data: { ...user } }
         const user = r.data?.data || r.data;
         setProfile(user);
 
@@ -40,12 +43,20 @@ export default function ProfilePage() {
         return axiosInstance.get(subsUrl);
       })
       .then((r) => {
-        // ListAPIView returns paginated { results: [...] } or plain array
         const payload = r.data?.data || r.data;
         setSubmissions(payload?.results || payload || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // Fetch activity heatmap — own or by username
+    const activityUrl = isOwnProfile
+      ? API_ROUTES.ACTIVITY_HEATMAP
+      : `${API_ROUTES.ACTIVITY_HEATMAP}?username=${username}`;
+    axiosInstance.get(activityUrl)
+      .then((r) => setActivityData(r.data?.data || r.data || {}))
+      .catch(() => {})
+      .finally(() => setActivityLoading(false));
   }, [username, isOwnProfile]);
 
   if (loading) return <PageLoader />;
@@ -129,29 +140,53 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* ── Badges ──────────────────────────────────── */}
+      <div className="bg-bg-card border border-border-primary rounded-2xl p-6">
+        <BadgesShowcase
+          profile={profile}
+          activityData={activityData}
+          submissions={submissions}
+        />
+      </div>
+
       {/* ── Activity Matrix ───────────────────────────────── */}
       <div className="bg-bg-card border border-border-primary rounded-2xl p-6">
-        <h2 className="text-text-secondary font-mono text-xs tracking-widest mb-4 uppercase">Activity</h2>
-        <ActivityMatrix />
+        <h2 className="text-text-secondary font-mono text-xs tracking-widest mb-4 uppercase">Activity — Last 12 Months</h2>
+        <ActivityMatrix data={activityData} loading={activityLoading} />
       </div>
 
       {/* ── Recent Submissions ────────────────────────────── */}
       <div className="bg-bg-card border border-border-primary rounded-2xl p-6">
-        <h2 className="text-text-secondary font-mono text-xs tracking-widest mb-4 uppercase">Recent Submissions</h2>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-text-secondary font-mono text-xs tracking-widest uppercase">Recent Submissions</h2>
+          {isOwnProfile && (
+            <Link to="/submissions" className="text-xs text-brand-blue hover:text-blue-400 font-medium transition-colors">
+              View all →
+            </Link>
+          )}
+        </div>
         {submissions.length === 0 ? (
           <p className="text-text-muted text-sm text-center py-8 font-mono">No submissions yet.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {submissions.map((sub) => (
-              <div key={sub.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-bg-hover transition-colors">
-                <div className="flex items-center gap-3">
+              <div
+                key={sub.id}
+                className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-bg-hover transition-colors duration-150"
+              >
+                <div className="flex items-center gap-3 min-w-0">
                   <StatusBadge status={sub.status} />
-                  <Link to={`/problems/${sub.problem?.slug}`} className="text-text-primary text-sm hover:text-brand-blue transition-colors">
-                    {sub.problem?.title || 'Unknown'}
+                  <Link
+                    to={`/problems/${sub.problem_slug}`}
+                    className="text-text-primary text-sm hover:text-brand-blue transition-colors truncate font-medium"
+                  >
+                    {sub.problem_title || 'Unknown Problem'}
                   </Link>
-                  {sub.problem?.difficulty && <DifficultyBadge difficulty={sub.problem.difficulty} />}
                 </div>
-                <span className="text-text-muted text-xs font-mono">{timeAgo(sub.submitted_at)}</span>
+                <div className="flex items-center gap-3 text-xs text-text-muted font-mono flex-shrink-0">
+                  <span className="hidden sm:inline">{sub.language}</span>
+                  <span>{timeAgo(sub.submitted_at)}</span>
+                </div>
               </div>
             ))}
           </div>

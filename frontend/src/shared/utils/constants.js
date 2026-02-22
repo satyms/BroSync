@@ -28,6 +28,7 @@ export const API_ROUTES = {
   SUBMISSION_DETAIL: (id) => `/submissions/${id}/`,
   MY_SUBMISSIONS: '/submissions/me/',
   ALL_SUBMISSIONS: '/submissions/all/',
+  ACTIVITY_HEATMAP: '/submissions/activity/',
 
   // Contests
   CONTESTS: '/contests/',
