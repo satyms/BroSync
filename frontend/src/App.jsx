@@ -22,7 +22,11 @@ import ContestsPage from '@features/contests/pages/ContestsPage';
 import ContestDetailPage from '@features/contests/pages/ContestDetailPage';
 import LeaderboardPage from '@features/leaderboard/pages/LeaderboardPage';
 import ProfilePage from '@features/profile/pages/ProfilePage';
+import BattleLobbyPage from '@features/battles/pages/BattleLobbyPage';
+import BattleRoomPage from '@features/battles/pages/BattleRoomPage';
+import BattleRequestToast from '@features/notifications/components/BattleRequestToast';
 import SettingsPage from '@features/profile/pages/SettingsPage';
+import RoadmapPage from '@features/roadmaps/pages/RoadmapPage';
 
 // ── Organizer Pages ───────────────────────────────────────────────────────────
 import OrgSetupPage from '@features/organizer/pages/OrgSetupPage';
@@ -66,6 +70,7 @@ function ThemedApp() {
   return (
     <BrowserRouter>
       <AppInitializer />
+      <BattleRequestToast />
       <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* ── Public ─────────────────────────── */}
@@ -82,8 +87,11 @@ function ThemedApp() {
             <Route path="/contests" element={<AuthenticatedLayout><ContestsPage /></AuthenticatedLayout>} />
             <Route path="/contests/:slug" element={<AuthenticatedLayout><ContestDetailPage /></AuthenticatedLayout>} />
             <Route path="/leaderboard" element={<AuthenticatedLayout><LeaderboardPage /></AuthenticatedLayout>} />
+            <Route path="/battles" element={<AuthenticatedLayout><BattleLobbyPage /></AuthenticatedLayout>} />
+            <Route path="/battles/:battleId" element={<AuthenticatedLayout><BattleRoomPage /></AuthenticatedLayout>} />
             <Route path="/profile/:username" element={<AuthenticatedLayout><ProfilePage /></AuthenticatedLayout>} />
             <Route path="/settings" element={<AuthenticatedLayout><SettingsPage /></AuthenticatedLayout>} />
+            <Route path="/roadmaps" element={<AuthenticatedLayout><RoadmapPage /></AuthenticatedLayout>} />
 
             {/* ── Organizer (public setup + protected panel) ── */}
             <Route path="/organizer/setup" element={<ProtectedRoute><OrgSetupPage /></ProtectedRoute>} />

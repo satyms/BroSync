@@ -1,11 +1,77 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { leaderboardService } from '../services/leaderboardService';
+import { battlesService } from '@features/battles/services/battlesService';
 import { PageLoader } from '@shared/components/ui/Spinner';
 import { formatNumber } from '@shared/utils/formatters';
 import EmptyState from '@shared/components/ui/EmptyState';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
 import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+
+/* ── Challenge Modal ─────────────────────────────────────── */
+function ChallengeModal({ target, onClose }) {
+  const [difficulty, setDifficulty] = useState('medium');
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    setSending(true);
+    try {
+      console.log('[ChallengeModal] Sending request to:', target.username);
+      await battlesService.sendRequest(target.username, difficulty);
+      toast.success(`Challenge sent to ${target.username}!`);
+      onClose();
+    } catch (err) {
+      console.error('[ChallengeModal] sendRequest error:', err?.response?.data);
+      const errData = err?.response?.data?.error;
+      // errData.message may be a string or an object (serializer errors dict)
+      let msg = 'Failed to send challenge.';
+      if (errData?.message) {
+        msg = typeof errData.message === 'string'
+          ? errData.message
+          : Object.values(errData.message).flat().join(' ');
+      }
+      toast.error(msg);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="bg-bg-card border border-border-primary rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-5">
+        <div>
+          <h3 className="text-text-primary font-bold text-base">⚔️ Challenge {target.username}</h3>
+          <p className="text-text-muted text-sm mt-1">Choose difficulty for the 5 problems.</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {['easy', 'medium', 'hard'].map((d) => (
+            <button
+              key={d}
+              onClick={() => setDifficulty(d)}
+              className={`py-2 rounded-lg text-sm font-medium border transition-colors capitalize
+                ${difficulty === d
+                  ? { easy: 'bg-green-900/30 border-green-600 text-green-400', medium: 'bg-yellow-900/30 border-yellow-600 text-yellow-400', hard: 'bg-red-900/30 border-red-600 text-red-400' }[d]
+                  : 'border-border-primary text-text-secondary hover:bg-bg-hover'}`}
+            >
+              {d}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 px-4 py-2 rounded-lg border border-border-primary text-text-secondary hover:bg-bg-tertiary text-sm transition-colors">
+            Cancel
+          </button>
+          <button onClick={handleSend} disabled={sending} className="flex-1 px-4 py-2 rounded-lg bg-brand-blue hover:bg-brand-blue/80 text-white text-sm font-semibold transition-colors disabled:opacity-50">
+            {sending ? 'Sending…' : 'Send Challenge'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LeaderboardPage() {
   const { user } = useSelector((s) => s.auth);
@@ -13,6 +79,7 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
+  const [challengeTarget, setChallengeTarget] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -27,6 +94,10 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 animate-fade-in">
+      {/* Challenge Modal */}
+      {challengeTarget && (
+        <ChallengeModal target={challengeTarget} onClose={() => setChallengeTarget(null)} />
+      )}
       {/* Header */}
       <div>
         <h1 className="text-text-primary text-xl font-bold">Global Leaderboard</h1>
@@ -65,10 +136,11 @@ export default function LeaderboardPage() {
       <div className="bg-bg-card border border-border-primary rounded-xl overflow-hidden">
         <div className="grid grid-cols-12 gap-3 px-5 py-3 border-b border-border-primary text-text-muted text-xs font-mono uppercase tracking-wider">
           <div className="col-span-1">Rank</div>
-          <div className="col-span-4">User</div>
+          <div className="col-span-3">User</div>
           <div className="col-span-2 text-center">Problems</div>
           <div className="col-span-2 text-center">Contests</div>
-          <div className="col-span-3 text-right">Rating</div>
+          <div className="col-span-2 text-right">Rating</div>
+          <div className="col-span-2 text-right">Battle</div>
         </div>
 
         {loading ? (
@@ -94,15 +166,15 @@ export default function LeaderboardPage() {
                       <span className="text-text-muted font-mono text-sm">#{rank}</span>
                     )}
                   </div>
-                  <div className="col-span-4 self-center flex items-center gap-2.5">
+                  <div className="col-span-3 self-center flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue to-accent-purple flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                       {u.username?.[0]?.toUpperCase()}
                     </div>
-                    <div>
-                      <Link to={`/profile/${u.username}`} className="text-text-primary hover:text-brand-blue text-sm font-medium transition-colors">
+                    <div className="min-w-0">
+                      <Link to={`/profile/${u.username}`} className="text-text-primary hover:text-brand-blue text-sm font-medium transition-colors truncate block">
                         {u.username}
                       </Link>
-                      {isMe && <span className="text-[10px] text-brand-blue font-mono ml-1">(you)</span>}
+                      {isMe && <span className="text-[10px] text-brand-blue font-mono">(you)</span>}
                     </div>
                   </div>
                   <div className="col-span-2 self-center text-center text-text-secondary text-sm font-mono">
@@ -111,10 +183,20 @@ export default function LeaderboardPage() {
                   <div className="col-span-2 self-center text-center text-text-secondary text-sm font-mono">
                     {formatNumber(u.contests_participated || 0)}
                   </div>
-                  <div className="col-span-3 self-center text-right">
+                  <div className="col-span-2 self-center text-right">
                     <span className="text-brand-blue font-bold font-mono text-sm">
                       {formatNumber(u.rating || entry.score || 0)}
                     </span>
+                  </div>
+                  <div className="col-span-2 self-center text-right">
+                    {!isMe && (
+                      <button
+                        onClick={() => setChallengeTarget({ username: u.username })}
+                        className="px-2.5 py-1 text-[11px] font-semibold border border-brand-blue/50 text-brand-blue hover:bg-brand-blue/10 rounded-lg transition-colors"
+                      >
+                        ⚔️ Battle
+                      </button>
+                    )}
                   </div>
                 </div>
               );

@@ -9,6 +9,9 @@ from . import views
 app_name = "problems"
 
 urlpatterns = [
+    # Roadmap tree
+    path("roadmaps/", views.RoadmapView.as_view(), name="roadmaps"),
+
     # Public endpoints
     path("", views.ProblemListView.as_view(), name="list"),
     path("categories/", views.CategoryListView.as_view(), name="categories"),

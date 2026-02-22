@@ -135,6 +135,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "problems_solved",
             "contests_participated",
             "rating",
+            "battles_played",
+            "battles_won",
             "global_rank",
             "date_joined",
         ]

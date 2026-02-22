@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { LayoutDashboard, Code2, Trophy, BarChart3, Zap, User } from 'lucide-react';
+import { LayoutDashboard, Code2, Trophy, BarChart3, Zap, User, Map } from 'lucide-react';
 import { toggleSidebar } from '@store/uiSlice';
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/contests',    label: 'Contests',     Icon: Trophy          },
   { to: '/leaderboard', label: 'Leaderboard',  Icon: BarChart3       },
   { to: '/submissions', label: 'Submissions',  Icon: Zap             },
+  { to: '/roadmaps',    label: 'Roadmaps',     Icon: Map             },
 ];
 
 export default function Sidebar() {

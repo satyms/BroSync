@@ -68,6 +68,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     problems_solved = models.PositiveIntegerField(default=0)
     contests_participated = models.PositiveIntegerField(default=0)
     rating = models.IntegerField(default=0, db_index=True)
+    battles_played = models.PositiveIntegerField(default=0)
+    battles_won    = models.PositiveIntegerField(default=0)
 
     # Timestamps
     date_joined = models.DateTimeField(default=timezone.now)

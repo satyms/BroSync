@@ -193,6 +193,102 @@ class LocalSandbox:
                 except Exception:
                     pass
 
+    def run(
+        self,
+        code: str,
+        language: str,
+        test_cases: list,
+        time_limit_ms: int = 5000,
+        memory_limit_mb: int = 256,
+    ) -> dict:
+        """
+        Judge code against a list of TestCase objects.
+        Runs each test case through execute() and compares to expected output.
+
+        Returns a dict with keys:
+            status            : 'accepted' | 'wrong_answer' | 'runtime_error' |
+                               'time_limit' | 'compile_error'
+            execution_time_ms : total wall-clock ms
+            memory_used_kb   : 0 (not measurable locally)
+            error             : stderr text on failure, else ''
+            failed_case       : 1-based index of first failing test case (or None)
+        """
+        # Override sandbox timeout with per-problem limit
+        old_timeout = self.timeout
+        self.timeout = max(1, time_limit_ms // 1000 + 2)  # seconds, with 2s buffer
+
+        total_ms = 0
+        try:
+            for idx, tc in enumerate(test_cases, start=1):
+                result = self.execute(
+                    language=language,
+                    code=code,
+                    stdin=tc.input_data or "",
+                )
+
+                total_ms += result.get("execution_time_ms", 0)
+                stderr    = result.get("stderr", "")
+                stdout    = result.get("stdout", "")
+                exit_code = result.get("exit_code", 0)
+
+                # Compilation / interpreter not found
+                if exit_code != 0 and ("not found" in stderr or "Unsupported" in stderr):
+                    return {
+                        "status": "compile_error",
+                        "execution_time_ms": total_ms,
+                        "memory_used_kb": 0,
+                        "error": stderr,
+                        "failed_case": idx,
+                    }
+
+                # Time Limit
+                if "Time Limit Exceeded" in stderr or exit_code == -1:
+                    return {
+                        "status": "time_limit",
+                        "execution_time_ms": total_ms,
+                        "memory_used_kb": 0,
+                        "error": "Time Limit Exceeded",
+                        "failed_case": idx,
+                    }
+
+                # Runtime Error (non-zero exit, not TLE)
+                if exit_code != 0:
+                    return {
+                        "status": "runtime_error",
+                        "execution_time_ms": total_ms,
+                        "memory_used_kb": 0,
+                        "error": stderr,
+                        "failed_case": idx,
+                    }
+
+                # Compare output (strip trailing whitespace on each line for safety)
+                expected = "\n".join(
+                    line.rstrip() for line in (tc.expected_output or "").splitlines()
+                ).strip()
+                actual = "\n".join(
+                    line.rstrip() for line in stdout.splitlines()
+                ).strip()
+
+                if actual != expected:
+                    return {
+                        "status": "wrong_answer",
+                        "execution_time_ms": total_ms,
+                        "memory_used_kb": 0,
+                        "error": f"Test {idx}: expected {repr(expected[:120])}, got {repr(actual[:120])}",
+                        "failed_case": idx,
+                    }
+
+            # All test cases passed
+            return {
+                "status": "accepted",
+                "execution_time_ms": total_ms,
+                "memory_used_kb": 0,
+                "error": "",
+                "failed_case": None,
+            }
+        finally:
+            self.timeout = old_timeout
+
     def verify_images(self) -> dict:
         """Check which language runtimes are available locally."""
         checks = {

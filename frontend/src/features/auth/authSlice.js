@@ -124,8 +124,12 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(fetchProfile.rejected, (state) => {
-        state.isAuthenticated = false;
-        state.user = null;
+        // Only clear session if the tokens are actually gone (refresh also failed).
+        // A transient network error or server hiccup should NOT log the user out.
+        if (!localStorage.getItem('access_token')) {
+          state.isAuthenticated = false;
+          state.user = null;
+        }
       });
 
     // Update profile
