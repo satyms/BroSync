@@ -4,7 +4,7 @@ import { API_ROUTES } from '@shared/utils/constants';
 export const proctorService = {
   /**
    * Send a base64-encoded webcam frame for analysis.
-   * @param {{ frame: string, contest_id: string }} body
+   * @param {{ frame: string, contest_id: string, problem_id: string }} body
    */
   analyzeFrame: (body) =>
     axiosInstance
@@ -14,9 +14,10 @@ export const proctorService = {
   /**
    * Get current violation count (no frame needed).
    * @param {string} contestId
+   * @param {string} problemId
    */
-  getStatus: (contestId) =>
+  getStatus: (contestId, problemId) =>
     axiosInstance
-      .get(API_ROUTES.PROCTOR_STATUS, { params: { contest_id: contestId } })
+      .get(API_ROUTES.PROCTOR_STATUS, { params: { contest_id: contestId, problem_id: problemId } })
       .then((r) => r.data?.data),
 };

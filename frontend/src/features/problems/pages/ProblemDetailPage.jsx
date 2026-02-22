@@ -57,48 +57,6 @@ export default function ProblemDetailPage() {
   const tabToastRef = useRef(0);
   const autoSubmittingRef = useRef(false); // prevent double auto-submit
 
-  // ── Proctoring: disqualification handler ──────────────────
-  const handleProctorDisqualified = useCallback(() => {
-    // Auto-submit whatever code exists, then redirect to contest page
-    const safeCode = codeBeforePasteRef.current;
-    if (safeCode && safeCode.trim() && problem) {
-      const payload = { problem: problem.id, language, code: safeCode };
-      if (contest?.id) payload.contest = contest.id;
-      submissionsService.submit(payload).catch(() => {});
-    }
-    setTimeout(() => {
-      navigate(contestSlug ? `/contests/${contestSlug}` : '/contests');
-    }, 4000);
-  }, [problem, language, contest, contestSlug, navigate]);
-
-  // ── Proctoring hook (contest mode only) ───────────────────
-  const {
-    videoRef: proctorVideoRef,
-    violations: proctorViolations,
-    maxViolations: proctorMaxViolations,
-    disqualified: proctorDisqualified,
-    cameraError: proctorCameraError,
-    cameraReady: proctorCameraReady,
-    lastResult: proctorLastResult,
-  } = useProctoring({
-    enabled: isContestMode,
-    contestId: contest?.id,
-    onDisqualified: handleProctorDisqualified,
-  });
-
-  // Keep a live snapshot of code so paste handler can read it synchronously
-  useEffect(() => {
-    codeBeforePasteRef.current = code;
-  }, [code]);
-
-  // ── Fetch contest details when in contest mode ────────────────
-  useEffect(() => {
-    if (!contestSlug) return;
-    contestsService.getContest(contestSlug)
-      .then(setContest)
-      .catch(() => toast.error('Contest not found'));
-  }, [contestSlug]);
-
   // ── Poll submission status ────────────────────────────────────
   const pollStatus = useCallback((subId) => {
     let attempts = 0;
@@ -118,6 +76,90 @@ export default function ProblemDetailPage() {
       if (++attempts > 20) clearInterval(interval);
     }, 2000);
   }, []);
+
+  // ── Proctoring: disqualification handler ──────────────────
+  const handleProctorDisqualified = useCallback(() => {
+    if (autoSubmittingRef.current) return;
+    autoSubmittingRef.current = true;
+
+    // Auto-submit current code exactly like tab-switch violation
+    const safeCode = codeBeforePasteRef.current;
+    if (safeCode && safeCode.trim() && problem) {
+      const payload = { problem: problem.id, language, code: safeCode };
+      if (contest?.id) payload.contest = contest.id;
+
+      toast.error(
+        '🚫 Too many face violations! Your code has been auto-submitted and contest ended.',
+        { id: 'proctor-dq', duration: 8000 },
+      );
+
+      submissionsService.submit(payload)
+        .then((sub) => {
+          setLatestResult(sub);
+          setMySubmissions((prev) => [sub, ...prev]);
+          setActiveTab('result');
+          pollStatus(sub.id);
+        })
+        .catch(() => {
+          toast.error('Auto-submission failed.', { id: 'proctor-dq-fail' });
+        })
+        .finally(() => {
+          autoSubmittingRef.current = false;
+          setTimeout(() => {
+            navigate(contestSlug ? `/contests/${contestSlug}` : '/contests');
+          }, 4000);
+        });
+    } else {
+      autoSubmittingRef.current = false;
+      toast.error(
+        '🚫 Too many face violations! Contest ended.',
+        { id: 'proctor-dq', duration: 8000 },
+      );
+      setTimeout(() => {
+        navigate(contestSlug ? `/contests/${contestSlug}` : '/contests');
+      }, 4000);
+    }
+  }, [problem, language, contest, contestSlug, navigate, pollStatus]);
+
+  // ── Determine if this problem is in the first 5 of the contest ──
+  const isInFirstFive = (() => {
+    if (!isContestMode || !contest?.problems || !problem) return false;
+    const problems = contest.problems || [];
+    const idx = problems.findIndex((cp) => {
+      const p = cp.problem || cp;
+      return p.slug === slug || p.id === problem.id;
+    });
+    return idx >= 0 && idx < 5;
+  })();
+
+  // ── Proctoring hook (only first 5 contest problems) ───────
+  const {
+    videoRef: proctorVideoRef,
+    violations: proctorViolations,
+    maxViolations: proctorMaxViolations,
+    disqualified: proctorDisqualified,
+    cameraError: proctorCameraError,
+    cameraReady: proctorCameraReady,
+    lastResult: proctorLastResult,
+  } = useProctoring({
+    enabled: isContestMode && isInFirstFive,
+    contestId: contest?.id,
+    problemId: problem?.id,
+    onDisqualified: handleProctorDisqualified,
+  });
+
+  // Keep a live snapshot of code so paste handler can read it synchronously
+  useEffect(() => {
+    codeBeforePasteRef.current = code;
+  }, [code]);
+
+  // ── Fetch contest details when in contest mode ────────────────
+  useEffect(() => {
+    if (!contestSlug) return;
+    contestsService.getContest(contestSlug)
+      .then(setContest)
+      .catch(() => toast.error('Contest not found'));
+  }, [contestSlug]);
 
   // ── Page-level anti-paste (all problems & contests) ────────
   // Blocks every form of paste/drop on the editor page.
@@ -436,9 +478,11 @@ export default function ProblemDetailPage() {
                   {isContestMode ? 'Contest Mode Active' : 'Secure Editor'}
                 </p>
                 <p className="text-amber-400/70 text-xs font-mono">
-                  {isContestMode
+                  {isContestMode && isInFirstFive
                     ? `Proctored • Copy-paste & tab switching monitored • ${contest?.title || contestSlug}`
-                    : 'Copy-paste & tab switching are monitored — violations auto-submit your code'}
+                    : isContestMode
+                      ? `Copy-paste & tab switching monitored • ${contest?.title || contestSlug}`
+                      : 'Copy-paste & tab switching are monitored — violations auto-submit your code'}
                 </p>
               </>
             )}
@@ -446,8 +490,8 @@ export default function ProblemDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* ── Proctoring violation counter (contest mode) ── */}
-          {isContestMode && (
+          {/* ── Proctoring violation counter (first 5 problems only) ── */}
+          {isContestMode && isInFirstFive && (
             <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 border text-xs font-mono ${
               proctorViolations >= proctorMaxViolations
                 ? 'bg-red-500/20 border-red-500/50 text-red-400'
@@ -460,8 +504,8 @@ export default function ProblemDetailPage() {
             </div>
           )}
 
-          {/* ── Webcam preview (contest mode) ── */}
-          {isContestMode && (
+          {/* ── Webcam preview (first 5 problems only) ── */}
+          {isContestMode && isInFirstFive && (
             <div className="relative">
               {proctorCameraError ? (
                 <div className="w-20 h-[60px] rounded-lg bg-red-900/30 border border-red-500/40 flex items-center justify-center">

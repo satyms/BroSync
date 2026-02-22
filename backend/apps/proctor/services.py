@@ -72,9 +72,9 @@ def analyse_frame(frame: np.ndarray) -> dict:
 
     faces = _face_cascade.detectMultiScale(
         grey,
-        scaleFactor=1.15,
-        minNeighbors=5,
-        minSize=(60, 60),
+        scaleFactor=1.2,
+        minNeighbors=4,
+        minSize=(50, 50),
         flags=cv2.CASCADE_SCALE_IMAGE,
     )
 
@@ -91,20 +91,20 @@ def analyse_frame(frame: np.ndarray) -> dict:
 
     frame_h, frame_w = frame.shape[:2]
 
-    # ── Size check: face should be at least ~5 % of the frame area ──
+    # ── Size check: face should be at least ~2 % of the frame area ──
     face_area_ratio = (w * h) / (frame_w * frame_h) if (frame_w and frame_h) else 0
-    if face_area_ratio < 0.03:
+    if face_area_ratio < 0.02:
         return {
             "looking_away": True,
             "confidence": round(face_area_ratio * 10, 3),
             "reason": "face_too_small",
         }
 
-    # ── Position check: face centre shouldn't be at the extreme edges ──
+    # ── Position check: face centre should be reasonably centred ──
     face_cx = (x + w / 2) / frame_w
     face_cy = (y + h / 2) / frame_h
 
-    if face_cx < 0.10 or face_cx > 0.90 or face_cy < 0.10 or face_cy > 0.90:
+    if face_cx < 0.20 or face_cx > 0.80 or face_cy < 0.10 or face_cy > 0.90:
         return {
             "looking_away": True,
             "confidence": round(min(face_area_ratio * 10, 1.0), 3),

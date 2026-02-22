@@ -16,10 +16,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { proctorService } from '../services/proctorService';
 
-const CAPTURE_INTERVAL = 3500; // ms between captures
+const CAPTURE_INTERVAL = 5000; // ms between captures
 const MAX_VIOLATIONS = 5;
 
-export default function useProctoring({ enabled, contestId, onDisqualified }) {
+export default function useProctoring({ enabled, contestId, problemId, onDisqualified }) {
   const [stream, setStream] = useState(null);
   const [violations, setViolations] = useState(0);
   const [disqualified, setDisqualified] = useState(false);
@@ -79,12 +79,13 @@ export default function useProctoring({ enabled, contestId, onDisqualified }) {
   useEffect(() => {
     if (!enabled || !contestId) return;
 
-    proctorService.getStatus(contestId)
+    proctorService.getStatus(contestId, problemId)
       .then((data) => {
         setViolations(data.violations || 0);
         if (data.disqualified) {
           setDisqualified(true);
           disqualifiedRef.current = true;
+          onDisqualified?.();
         }
       })
       .catch(() => {}); // first load — best effort
@@ -93,6 +94,7 @@ export default function useProctoring({ enabled, contestId, onDisqualified }) {
   // ── Capture & send frames periodically ──────────────────
   const captureAndAnalyse = useCallback(async () => {
     if (analysingRef.current || disqualifiedRef.current) return;
+    if (!contestId || !problemId) return; // not loaded yet
     if (!videoRef.current || videoRef.current.readyState < 2) return;
 
     analysingRef.current = true;
@@ -111,16 +113,20 @@ export default function useProctoring({ enabled, contestId, onDisqualified }) {
       const result = await proctorService.analyzeFrame({
         frame: dataUri,
         contest_id: contestId,
+        problem_id: problemId,
       });
 
       setLastResult(result);
       setViolations(result.violations);
 
-      if (result.looking_away) {
-        toast.error(
-          `⚠️ Face violation ${result.violations}/${MAX_VIOLATIONS} — Look at the screen!`,
-          { id: 'proctor-warn', duration: 3000 },
-        );
+      if (result.looking_away && result.violations > 0) {
+        // Only show toast on every 2nd violation to avoid spam
+        if (result.violations % 2 === 0 || result.violations >= MAX_VIOLATIONS - 1) {
+          toast.error(
+            `⚠️ Face violation ${result.violations}/${MAX_VIOLATIONS} — Look at the screen!`,
+            { id: 'proctor-warn', duration: 4000 },
+          );
+        }
       }
 
       if (result.disqualified) {
@@ -133,12 +139,16 @@ export default function useProctoring({ enabled, contestId, onDisqualified }) {
         onDisqualified?.();
       }
     } catch (err) {
-      // Network / parsing errors — silently skip this frame
+      // Network / parsing errors — log and surface to user
       console.warn('[proctor] frame analysis failed:', err.message);
+      // If it's a server error (not network), show brief warning
+      if (err.response) {
+        console.error('[proctor] API error:', err.response.status, err.response.data);
+      }
     } finally {
       analysingRef.current = false;
     }
-  }, [contestId, onDisqualified]);
+  }, [contestId, problemId, onDisqualified]);
 
   useEffect(() => {
     if (!enabled || !cameraReady || disqualified) return;
