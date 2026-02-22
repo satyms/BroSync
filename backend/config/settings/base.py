@@ -59,6 +59,7 @@ LOCAL_APPS = [
     "apps.judge",
     "apps.notifications",
     "apps.organizer",
+    "apps.battles",        # ← Code Battle System
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

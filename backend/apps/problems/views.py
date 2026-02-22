@@ -4,7 +4,9 @@ Problems - Views
 API views for problem listing, detail, categories, and code playground.
 """
 
+import json
 import logging
+import os
 
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -249,3 +251,33 @@ class CategoryCreateView(generics.CreateAPIView):
     """
     serializer_class = CategoryCreateSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdmin]
+
+
+class RoadmapView(APIView):
+    """
+    GET /api/v1/problems/roadmaps/?type=dsa
+    Returns the roadmap node tree for the given type (dsa, python, webdev).
+    Public endpoint — no auth required.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    _DATA_FILE = os.path.join(os.path.dirname(__file__), "roadmaps.json")
+    _cache: dict | None = None
+
+    @classmethod
+    def _load(cls) -> dict:
+        if cls._cache is None:
+            with open(cls._DATA_FILE, "r", encoding="utf-8") as f:
+                cls._cache = json.load(f)
+        return cls._cache
+
+    def get(self, request):
+        roadmap_type = request.query_params.get("type", "dsa").lower()
+        data = self._load()
+        if roadmap_type not in data:
+            valid = list(data.keys())
+            return error_response(
+                f"Unknown roadmap type '{roadmap_type}'. Valid types: {valid}",
+                status.HTTP_400_BAD_REQUEST,
+            )
+        return success_response(data[roadmap_type])

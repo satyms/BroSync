@@ -72,3 +72,14 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "type": "system_notification",
             "data": event["data"],
         }))
+
+    async def notify(self, event):
+        """
+        Generic battle/system event pushed by the service layer.
+        Payload: { type: "notify", event_type: str, payload: dict }
+        Forwarded to the client as: { type: <event_type>, ...payload }
+        """
+        await self.send(text_data=json.dumps({
+            "type": event["event_type"],   # e.g. "battle_request" | "battle_started"
+            **event["payload"],
+        }))

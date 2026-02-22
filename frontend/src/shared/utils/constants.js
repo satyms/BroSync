@@ -59,13 +59,24 @@ export const API_ROUTES = {
   NOTIFICATIONS: '/notifications/',
   NOTIFICATION_READ: (id) => `/notifications/${id}/read/`,
   NOTIFICATIONS_READ_ALL: '/notifications/read-all/',
+
+  // Battles ⚔️
+  BATTLES_SEND_REQUEST: '/battles/request/',
+  BATTLES_INBOX: '/battles/request/inbox/',
+  BATTLES_RESPOND: (id) => `/battles/request/${id}/respond/`,
+  BATTLES_MY: '/battles/my/',
+  BATTLES_HISTORY: '/battles/history/',
+  BATTLES_DETAIL: (id) => `/battles/${id}/`,
+  BATTLES_SUBMIT: (id) => `/battles/${id}/submit/`,
 };
 
 // ── WebSocket Endpoints ───────────────────────────────────
-export const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost/ws';
+export const WS_BASE = import.meta.env.VITE_WS_URL ||
+  `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`;
 export const WS_ROUTES = {
   LEADERBOARD: (contestId) => `${WS_BASE}/leaderboard/${contestId}/`,
-  NOTIFICATIONS: (userId) => `${WS_BASE}/notifications/${userId}/`,
+  NOTIFICATIONS: () => `${WS_BASE}/notifications/`,
+  BATTLE: (battleId) => `${WS_BASE}/battles/${battleId}/`,
 };
 
 // ── Difficulty Config ─────────────────────────────────────

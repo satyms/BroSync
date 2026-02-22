@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '@api/axiosInstance';
 import { API_ROUTES } from '@shared/utils/constants';
+import { battlesService } from '@features/battles/services/battlesService';
 import { DifficultyBadge, StatusBadge } from '@shared/components/ui/Badge';
 import { PageLoader } from '@shared/components/ui/Spinner';
 import { formatDate, formatNumber, timeAgo } from '@shared/utils/formatters';
 import ActivityMatrix from '@features/dashboard/components/ActivityMatrix';
 import StatsDonut from '@features/dashboard/components/StatsDonut';
 import { useSelector } from 'react-redux';
-import { CalendarDaysIcon, ChatBubbleLeftIcon, TrophyIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, ChatBubbleLeftIcon, TrophyIcon, BoltIcon } from '@heroicons/react/24/outline';
 
 export default function ProfilePage() {
   const { username } = useParams();
   const currentUser = useSelector((s) => s.auth.user);
   const [profile, setProfile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [battleHistory, setBattleHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const isOwnProfile = currentUser?.username === username;
@@ -46,6 +48,13 @@ export default function ProfilePage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // Fetch battle history (own profile only)
+    if (isOwnProfile) {
+      battlesService.getBattleHistory()
+        .then((data) => setBattleHistory(data))
+        .catch(() => {});
+    }
   }, [username, isOwnProfile]);
 
   if (loading) return <PageLoader />;
@@ -120,6 +129,8 @@ export default function ProfilePage() {
             { label: 'Contests', value: formatNumber(profile.contests_participated || 0), color: 'text-brand-orange' },
             { label: 'Rating', value: formatNumber(profile.rating || 0), color: 'text-accent-purple' },
             { label: 'Level', value: `${Math.floor((profile.rating || 0) / 100)}`, color: 'text-difficulty-easy' },
+            { label: 'Battles Fought', value: formatNumber(profile.battles_played || 0), color: 'text-red-400' },
+            { label: 'Battles Won', value: formatNumber(profile.battles_won || 0), color: 'text-green-400' },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-bg-tertiary border border-border-secondary rounded-xl p-4">
               <p className={`text-xl font-bold font-mono ${color}`}>{value}</p>
@@ -135,7 +146,58 @@ export default function ProfilePage() {
         <ActivityMatrix />
       </div>
 
-      {/* ── Recent Submissions ────────────────────────────── */}
+      {/* Battle History */}
+      {isOwnProfile && (
+        <div className="bg-bg-card border border-border-primary rounded-2xl p-6">
+          <h2 className="text-text-secondary font-mono text-xs tracking-widest mb-4 uppercase flex items-center gap-2">
+            <BoltIcon className="w-3.5 h-3.5" />
+            Battle History
+          </h2>
+          {battleHistory.length === 0 ? (
+            <p className="text-text-muted text-sm text-center py-8 font-mono">No battles yet. Go challenge someone! ⚔️</p>
+          ) : (
+            <div className="space-y-2">
+              {battleHistory.map((b) => {
+                const resultColor =
+                  b.result === 'win'  ? 'text-green-400 border-green-800 bg-green-900/20' :
+                  b.result === 'loss' ? 'text-red-400 border-red-800 bg-red-900/20' :
+                                        'text-yellow-400 border-yellow-800 bg-yellow-900/20';
+                const resultLabel =
+                  b.result === 'win' ? '⚡ Win' : b.result === 'loss' ? '❌ Loss' : '🤝 Draw';
+                return (
+                  <div key={b.battle_id} className="flex items-center justify-between py-3 px-4 rounded-xl bg-bg-tertiary border border-border-secondary hover:border-border-primary transition-colors">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold font-mono px-2.5 py-1 rounded-md border ${resultColor}`}>
+                        {resultLabel}
+                      </span>
+                      <div>
+                        <p className="text-text-primary text-sm font-medium">
+                          vs <span className="text-brand-blue">@{b.opponent}</span>
+                        </p>
+                        <p className="text-text-muted text-xs font-mono">
+                          {b.difficulty} · {b.my_solved} solved · {b.my_score} pts
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-text-primary text-sm font-mono font-semibold">
+                        <span className={b.my_score >= b.opponent_score ? 'text-green-400' : 'text-red-400'}>{b.my_score}</span>
+                        {' – '}
+                        <span className={b.opponent_score > b.my_score ? 'text-green-400' : 'text-text-muted'}>{b.opponent_score}</span>
+                      </p>
+                      <p className="text-text-muted text-[10px] font-mono">
+                        {b.ended_at ? timeAgo(b.ended_at) : '—'}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Recent Submissions */}
       <div className="bg-bg-card border border-border-primary rounded-2xl p-6">
         <h2 className="text-text-secondary font-mono text-xs tracking-widest mb-4 uppercase">Recent Submissions</h2>
         {submissions.length === 0 ? (
