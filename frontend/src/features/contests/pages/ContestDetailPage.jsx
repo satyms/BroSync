@@ -153,7 +153,7 @@ export default function ContestDetailPage() {
                       </div>
                     </div>
                     <Link
-                      to={`/problems/${problem.slug}`}
+                      to={`/contests/${slug}/problems/${problem.slug}`}
                       className="text-xs text-brand-blue hover:underline font-mono"
                     >
                       Solve →
