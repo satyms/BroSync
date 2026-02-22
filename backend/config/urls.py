@@ -22,4 +22,5 @@ urlpatterns = [
     path(f"{API_V1}leaderboard/", include("apps.leaderboard.urls", namespace="leaderboard")),
     path(f"{API_V1}organizer/", include("apps.organizer.urls", namespace="organizer")),
     path(f"{API_V1}notifications/", include("apps.notifications.urls", namespace="notifications")),
+    path(f"{API_V1}proctor/", include("apps.proctor.urls", namespace="proctor")),
 ]
