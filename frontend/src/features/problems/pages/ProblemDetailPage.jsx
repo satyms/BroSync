@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import toast from 'react-hot-toast';
 import { problemsService } from '../services/problemsService';
 import { submissionsService } from '@features/submissions/services/submissionsService';
+import { contestsService } from '@features/contests/services/contestsService';
+import useProctoring from '@features/contests/hooks/useProctoring';
 import { DifficultyBadge, StatusBadge } from '@shared/components/ui/Badge';
 import { PageLoader, Spinner } from '@shared/components/ui/Spinner';
 import { LANGUAGES } from '@shared/utils/constants';
@@ -16,6 +18,9 @@ import {
   ArrowPathIcon,
   ChevronDownIcon,
   PaperAirplaneIcon,
+  ShieldCheckIcon,
+  VideoCameraIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 const DEFAULT_CODE = {
@@ -26,7 +31,9 @@ const DEFAULT_CODE = {
 };
 
 export default function ProblemDetailPage() {
-  const { slug } = useParams();
+  const { slug, contestSlug } = useParams();
+  const navigate = useNavigate();
+  const isContestMode = Boolean(contestSlug);
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('description');
@@ -41,6 +48,301 @@ export default function ProblemDetailPage() {
   const [activeConsoleTab, setActiveConsoleTab] = useState('input');
   const [solvers, setSolvers] = useState([]);
   const [solversLoading, setSolversLoading] = useState(false);
+  const [contest, setContest] = useState(null);
+  const [pasteViolation, setPasteViolation] = useState(false);
+  const [tabViolation, setTabViolation] = useState(false);
+  const editorRef = useRef(null);
+  const codeBeforePasteRef = useRef(''); // snapshot for auto-submit on violation
+  const pasteToastRef = useRef(0);
+  const tabToastRef = useRef(0);
+  const autoSubmittingRef = useRef(false); // prevent double auto-submit
+
+  // ── Poll submission status ────────────────────────────────────
+  const pollStatus = useCallback((subId) => {
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      try {
+        const updated = await submissionsService.getSubmission(subId);
+        setLatestResult(updated);
+        if (updated.status !== 'pending' && updated.status !== 'running') {
+          clearInterval(interval);
+          if (updated.status === 'accepted') {
+            toast.success('✅ Accepted!', { duration: 4000 });
+          } else {
+            toast.error(`❌ ${updated.status.replace('_', ' ')}`);
+          }
+        }
+      } catch {}
+      if (++attempts > 20) clearInterval(interval);
+    }, 2000);
+  }, []);
+
+  // ── Proctoring: disqualification handler ──────────────────
+  const handleProctorDisqualified = useCallback(() => {
+    if (autoSubmittingRef.current) return;
+    autoSubmittingRef.current = true;
+
+    // Auto-submit current code exactly like tab-switch violation
+    const safeCode = codeBeforePasteRef.current;
+    if (safeCode && safeCode.trim() && problem) {
+      const payload = { problem: problem.id, language, code: safeCode };
+      if (contest?.id) payload.contest = contest.id;
+
+      toast.error(
+        '🚫 Too many face violations! Your code has been auto-submitted and contest ended.',
+        { id: 'proctor-dq', duration: 8000 },
+      );
+
+      submissionsService.submit(payload)
+        .then((sub) => {
+          setLatestResult(sub);
+          setMySubmissions((prev) => [sub, ...prev]);
+          setActiveTab('result');
+          pollStatus(sub.id);
+        })
+        .catch(() => {
+          toast.error('Auto-submission failed.', { id: 'proctor-dq-fail' });
+        })
+        .finally(() => {
+          autoSubmittingRef.current = false;
+          setTimeout(() => {
+            navigate(contestSlug ? `/contests/${contestSlug}` : '/contests');
+          }, 4000);
+        });
+    } else {
+      autoSubmittingRef.current = false;
+      toast.error(
+        '🚫 Too many face violations! Contest ended.',
+        { id: 'proctor-dq', duration: 8000 },
+      );
+      setTimeout(() => {
+        navigate(contestSlug ? `/contests/${contestSlug}` : '/contests');
+      }, 4000);
+    }
+  }, [problem, language, contest, contestSlug, navigate, pollStatus]);
+
+  // ── Determine if this problem is in the first 5 of the contest ──
+  const isInFirstFive = (() => {
+    if (!isContestMode || !contest?.problems || !problem) return false;
+    const problems = contest.problems || [];
+    const idx = problems.findIndex((cp) => {
+      const p = cp.problem || cp;
+      return p.slug === slug || p.id === problem.id;
+    });
+    return idx >= 0 && idx < 5;
+  })();
+
+  // ── Proctoring hook (only first 5 contest problems) ───────
+  const {
+    videoRef: proctorVideoRef,
+    violations: proctorViolations,
+    maxViolations: proctorMaxViolations,
+    disqualified: proctorDisqualified,
+    cameraError: proctorCameraError,
+    cameraReady: proctorCameraReady,
+    lastResult: proctorLastResult,
+  } = useProctoring({
+    enabled: isContestMode && isInFirstFive,
+    contestId: contest?.id,
+    problemId: problem?.id,
+    onDisqualified: handleProctorDisqualified,
+  });
+
+  // Keep a live snapshot of code so paste handler can read it synchronously
+  useEffect(() => {
+    codeBeforePasteRef.current = code;
+  }, [code]);
+
+  // ── Fetch contest details when in contest mode ────────────────
+  useEffect(() => {
+    if (!contestSlug) return;
+    contestsService.getContest(contestSlug)
+      .then(setContest)
+      .catch(() => toast.error('Contest not found'));
+  }, [contestSlug]);
+
+  // ── Page-level anti-paste (all problems & contests) ────────
+  // Blocks every form of paste/drop on the editor page.
+  // If a paste somehow bypasses, auto-submits the pre-paste code.
+  const triggerAutoSubmit = useCallback((violationType = 'paste') => {
+    if (autoSubmittingRef.current) return;
+    if (!problem) return;
+    const safeCode = codeBeforePasteRef.current;
+    if (!safeCode || !safeCode.trim()) return;
+
+    autoSubmittingRef.current = true;
+
+    const payload = { problem: problem.id, language, code: safeCode };
+    if (isContestMode && contest?.id) payload.contest = contest.id;
+
+    if (violationType === 'tab-switch') {
+      setTabViolation(true);
+      toast.error(
+        'Tab switch detected! Your code has been auto-submitted.',
+        { icon: '🚨', duration: 6000, id: 'tab-violation' },
+      );
+    } else {
+      setPasteViolation(true);
+      toast.error(
+        'Paste detected! Your code before the paste has been auto-submitted.',
+        { icon: '🚨', duration: 6000, id: 'paste-violation' },
+      );
+    }
+
+    submissionsService.submit(payload)
+      .then((sub) => {
+        setLatestResult(sub);
+        setMySubmissions((prev) => [sub, ...prev]);
+        setActiveTab('result');
+        pollStatus(sub.id);
+      })
+      .catch(() => {
+        toast.error('Auto-submission failed — but the paste was still blocked.', {
+          id: 'paste-violation-fail',
+        });
+      })
+      .finally(() => {
+        autoSubmittingRef.current = false;
+      });
+  }, [problem, language, isContestMode, contest]);
+
+  useEffect(() => {
+    const showWarningAndAutoSubmit = () => {
+      const now = Date.now();
+      if (now - pasteToastRef.current > 2000) {
+        pasteToastRef.current = now;
+        triggerAutoSubmit();
+      }
+    };
+
+    const blockPaste = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showWarningAndAutoSubmit();
+    };
+
+    const blockDrop = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const now = Date.now();
+      if (now - pasteToastRef.current > 2000) {
+        pasteToastRef.current = now;
+        triggerAutoSubmit();
+      }
+    };
+
+    const blockBeforeInput = (e) => {
+      if (
+        e.inputType === 'insertFromPaste' ||
+        e.inputType === 'insertFromDrop' ||
+        e.inputType === 'insertFromPasteAsQuotation'
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        showWarningAndAutoSubmit();
+      }
+    };
+
+    const blockKeyboard = (e) => {
+      const key = e.key?.toLowerCase();
+      const isCtrlCmd = e.ctrlKey || e.metaKey;
+
+      if (isCtrlCmd && key === 'v') {
+        e.preventDefault();
+        e.stopPropagation();
+        showWarningAndAutoSubmit();
+        return;
+      }
+      if (e.shiftKey && key === 'insert') {
+        e.preventDefault();
+        e.stopPropagation();
+        showWarningAndAutoSubmit();
+        return;
+      }
+    };
+
+    const blockDragover = (e) => e.preventDefault();
+
+    // Capture phase — fires before Monaco's own handlers
+    document.addEventListener('paste', blockPaste, true);
+    document.addEventListener('drop', blockDrop, true);
+    document.addEventListener('dragover', blockDragover, true);
+    document.addEventListener('beforeinput', blockBeforeInput, true);
+    document.addEventListener('keydown', blockKeyboard, true);
+
+    const originalReadText = navigator.clipboard?.readText;
+    if (navigator.clipboard) {
+      navigator.clipboard.readText = () => Promise.reject(new Error('Clipboard blocked'));
+    }
+
+    return () => {
+      document.removeEventListener('paste', blockPaste, true);
+      document.removeEventListener('drop', blockDrop, true);
+      document.removeEventListener('dragover', blockDragover, true);
+      document.removeEventListener('beforeinput', blockBeforeInput, true);
+      document.removeEventListener('keydown', blockKeyboard, true);
+      if (navigator.clipboard && originalReadText) {
+        navigator.clipboard.readText = originalReadText;
+      }
+    };
+  }, [triggerAutoSubmit]);
+
+  // ── Tab-switch / focus-loss detection ──────────────────────────
+  // Auto-submits code when the user navigates away from this tab.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        const now = Date.now();
+        if (now - tabToastRef.current > 3000) {
+          tabToastRef.current = now;
+          triggerAutoSubmit('tab-switch');
+        }
+      }
+    };
+
+    const handleWindowBlur = () => {
+      const now = Date.now();
+      if (now - tabToastRef.current > 3000) {
+        tabToastRef.current = now;
+        triggerAutoSubmit('tab-switch');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+    };
+  }, [triggerAutoSubmit]);
+
+  // ── Monaco editor mount handler ───────────────────────────────
+  const handleEditorMount = useCallback((editor, monaco) => {
+    editorRef.current = editor;
+
+    // Disable the built-in paste keybindings inside Monaco
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV,
+      () => {} // no-op — page-level handler catches it
+    );
+
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyV,
+      () => {}
+    );
+
+    editor.addCommand(
+      monaco.KeyMod.Shift | monaco.KeyCode.Insert,
+      () => {}
+    );
+
+    // Override Monaco's clipboard paste action
+    const pasteAction = editor.getAction('editor.action.clipboardPasteAction');
+    if (pasteAction) {
+      pasteAction.run = () => Promise.resolve();
+    }
+  }, []);
 
   useEffect(() => {
     problemsService.getProblem(slug)
@@ -100,11 +402,16 @@ export default function ProblemDetailPage() {
     if (!code.trim()) return toast.error('Write some code first!');
     setSubmitting(true);
     try {
-      const sub = await submissionsService.submit({
+      const payload = {
         problem: problem.id,
         language,
         code,
-      });
+      };
+      // Attach contest ID for contest submissions
+      if (isContestMode && contest?.id) {
+        payload.contest = contest.id;
+      }
+      const sub = await submissionsService.submit(payload);
       toast.success('Submitted! Judging...');
       setLatestResult(sub);
       // Poll for result
@@ -118,25 +425,6 @@ export default function ProblemDetailPage() {
     }
   };
 
-  const pollStatus = async (subId) => {
-    let attempts = 0;
-    const interval = setInterval(async () => {
-      try {
-        const updated = await submissionsService.getSubmission(subId);
-        setLatestResult(updated);
-        if (updated.status !== 'pending' && updated.status !== 'running') {
-          clearInterval(interval);
-          if (updated.status === 'accepted') {
-            toast.success('✅ Accepted!', { duration: 4000 });
-          } else {
-            toast.error(`❌ ${updated.status.replace('_', ' ')}`);
-          }
-        }
-      } catch {}
-      if (++attempts > 20) clearInterval(interval);
-    }, 2000);
-  };
-
   if (loading) return <PageLoader />;
   if (!problem) return (
     <div className="text-center py-20 text-text-muted">
@@ -145,7 +433,123 @@ export default function ProblemDetailPage() {
   );
 
   return (
-    <div className="max-w-full h-[calc(100vh-5rem)] flex flex-col lg:flex-row gap-4 animate-fade-in">
+    <div className="max-w-full h-[calc(100vh-5rem)] flex flex-col gap-0 animate-fade-in">
+      {/* ── Security & Proctoring Banner ──────────── */}
+      <div className={`flex items-center justify-between rounded-xl px-4 py-2.5 mb-3 flex-shrink-0 border ${
+        proctorDisqualified
+          ? 'bg-red-600/20 border-red-500/60'
+          : (pasteViolation || tabViolation || proctorViolations > 0)
+            ? 'bg-red-500/10 border-red-500/40'
+            : 'bg-amber-500/10 border-amber-500/30'
+      }`}>
+        <div className="flex items-center gap-2.5">
+          <ShieldCheckIcon className={`w-5 h-5 ${
+            proctorDisqualified ? 'text-red-500' :
+            (pasteViolation || tabViolation || proctorViolations > 0) ? 'text-red-400' : 'text-amber-400'
+          }`} />
+          <div>
+            {proctorDisqualified ? (
+              <>
+                <p className="text-red-500 text-sm font-bold font-mono">Contest Ended — Disqualified</p>
+                <p className="text-red-400/70 text-xs font-mono">
+                  Too many face violations. Your code has been auto-submitted. Redirecting…
+                </p>
+              </>
+            ) : (pasteViolation || tabViolation) ? (
+              <>
+                <p className="text-red-400 text-sm font-semibold font-mono">
+                  {pasteViolation && tabViolation
+                    ? 'Multiple Violations Detected'
+                    : tabViolation
+                      ? 'Tab Switch Violation Detected'
+                      : 'Paste Violation Detected'}
+                </p>
+                <p className="text-red-400/70 text-xs font-mono">
+                  {tabViolation && !pasteViolation
+                    ? 'You switched tabs — your code has been auto-submitted for evaluation'
+                    : pasteViolation && !tabViolation
+                      ? 'Your code before the paste has been auto-submitted for evaluation'
+                      : 'Paste & tab-switch violations — your code has been auto-submitted'}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-amber-300 text-sm font-semibold font-mono">
+                  {isContestMode ? 'Contest Mode Active' : 'Secure Editor'}
+                </p>
+                <p className="text-amber-400/70 text-xs font-mono">
+                  {isContestMode && isInFirstFive
+                    ? `Proctored • Copy-paste & tab switching monitored • ${contest?.title || contestSlug}`
+                    : isContestMode
+                      ? `Copy-paste & tab switching monitored • ${contest?.title || contestSlug}`
+                      : 'Copy-paste & tab switching are monitored — violations auto-submit your code'}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* ── Proctoring violation counter (first 5 problems only) ── */}
+          {isContestMode && isInFirstFive && (
+            <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 border text-xs font-mono ${
+              proctorViolations >= proctorMaxViolations
+                ? 'bg-red-500/20 border-red-500/50 text-red-400'
+                : proctorViolations > 0
+                  ? 'bg-orange-500/15 border-orange-500/40 text-orange-400'
+                  : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+            }`}>
+              <ExclamationTriangleIcon className="w-3.5 h-3.5" />
+              <span>Face: {proctorViolations}/{proctorMaxViolations}</span>
+            </div>
+          )}
+
+          {/* ── Webcam preview (first 5 problems only) ── */}
+          {isContestMode && isInFirstFive && (
+            <div className="relative">
+              {proctorCameraError ? (
+                <div className="w-20 h-[60px] rounded-lg bg-red-900/30 border border-red-500/40 flex items-center justify-center">
+                  <VideoCameraIcon className="w-4 h-4 text-red-400" />
+                </div>
+              ) : (
+                <div className={`w-20 h-[60px] rounded-lg overflow-hidden border-2 ${
+                  proctorLastResult?.looking_away
+                    ? 'border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                    : proctorCameraReady
+                      ? 'border-emerald-500/50'
+                      : 'border-border-primary'
+                }`}>
+                  <video
+                    ref={proctorVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover mirror"
+                    style={{ transform: 'scaleX(-1)' }}
+                  />
+                </div>
+              )}
+              {/* Live status dot */}
+              {proctorCameraReady && !proctorCameraError && (
+                <span className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-bg-card ${
+                  proctorLastResult?.looking_away ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'
+                }`} />
+              )}
+            </div>
+          )}
+
+          {isContestMode && (
+            <Link
+              to={`/contests/${contestSlug}`}
+              className="text-xs text-amber-400 hover:text-amber-300 border border-amber-500/40 rounded-lg px-3 py-1 font-mono transition-colors"
+            >
+              ← Back
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
       {/* ── Left Panel: Problem Description ─────────────── */}
       <div className="lg:w-[45%] bg-bg-card border border-border-primary rounded-xl flex flex-col overflow-hidden">
         {/* Tabs */}
@@ -255,6 +659,7 @@ export default function ProblemDetailPage() {
             value={code}
             onChange={(val) => setCode(val || '')}
             theme="vs-dark"
+            onMount={handleEditorMount}
             options={{
               fontSize: 14,
               fontFamily: '"JetBrains Mono", "Fira Code", Consolas, monospace',
@@ -267,6 +672,11 @@ export default function ProblemDetailPage() {
               smoothScrolling: true,
               cursorBlinking: 'smooth',
               tabSize: 4,
+              // Anti-paste: disable context menu, drag-drop in editor
+              contextmenu: false,
+              dropIntoEditor: { enabled: false },
+              dragAndDrop: false,
+              pasteAs: { enabled: false },
             }}
           />
         </div>
@@ -351,6 +761,7 @@ export default function ProblemDetailPage() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
