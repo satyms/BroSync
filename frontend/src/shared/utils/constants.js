@@ -63,7 +63,6 @@ export const API_ROUTES = {
   // Proctoring
   PROCTOR_ANALYZE: '/proctor/analyze/',
   PROCTOR_STATUS: '/proctor/status/',
-  PROCTOR_RESET: '/proctor/reset/',
 };
 
 // ── WebSocket Endpoints ───────────────────────────────────
