@@ -4,8 +4,12 @@ Submissions - Views
 API views for submitting code, viewing results, and polling status.
 """
 
+import datetime
 import logging
 
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -142,3 +146,41 @@ class SubmissionStatusView(APIView):
             "execution_time_ms": submission.execution_time_ms,
             "memory_used_kb": submission.memory_used_kb,
         })
+
+
+class ActivityHeatmapView(APIView):
+    """
+    GET /api/v1/submissions/activity/
+    Returns daily submission counts over the last 365 days.
+    By default returns the authenticated user's data.
+    Optional ?username=<str> returns any user's public activity.
+    Response body: { "2025-01-15": 3, "2025-01-16": 1, ... }
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        username = request.query_params.get("username")
+        if username:
+            try:
+                target_user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return success_response({})
+        else:
+            target_user = request.user
+
+        since = timezone.now() - datetime.timedelta(days=364)
+
+        rows = (
+            Submission.objects
+            .filter(user=target_user, submitted_at__gte=since)
+            .annotate(day=TruncDate("submitted_at"))
+            .values("day")
+            .annotate(count=Count("id"))
+            .order_by("day")
+        )
+
+        data = {str(row["day"]): row["count"] for row in rows}
+        return success_response(data)

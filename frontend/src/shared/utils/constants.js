@@ -28,6 +28,7 @@ export const API_ROUTES = {
   SUBMISSION_DETAIL: (id) => `/submissions/${id}/`,
   MY_SUBMISSIONS: '/submissions/me/',
   ALL_SUBMISSIONS: '/submissions/all/',
+  ACTIVITY_HEATMAP: '/submissions/activity/',
 
   // Contests
   CONTESTS: '/contests/',
@@ -59,6 +60,10 @@ export const API_ROUTES = {
   NOTIFICATIONS: '/notifications/',
   NOTIFICATION_READ: (id) => `/notifications/${id}/read/`,
   NOTIFICATIONS_READ_ALL: '/notifications/read-all/',
+
+  // Proctoring
+  PROCTOR_ANALYZE: '/proctor/analyze/',
+  PROCTOR_STATUS: '/proctor/status/',
 };
 
 // ── WebSocket Endpoints ───────────────────────────────────
