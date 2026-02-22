@@ -29,6 +29,11 @@ redis>=5.0,<6.0
 # Docker SDK
 docker>=7.0,<8.0
 
+# Proctoring (face detection via OpenCV Haar cascades)
+opencv-python-headless>=4.9
+Pillow>=10.2
+numpy>=1.26
+
 # Security
 python-decouple>=3.8,<4.0
 bleach>=6.1,<7.0

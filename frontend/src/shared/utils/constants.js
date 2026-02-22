@@ -60,6 +60,10 @@ export const API_ROUTES = {
   NOTIFICATIONS: '/notifications/',
   NOTIFICATION_READ: (id) => `/notifications/${id}/read/`,
   NOTIFICATIONS_READ_ALL: '/notifications/read-all/',
+
+  // Proctoring
+  PROCTOR_ANALYZE: '/proctor/analyze/',
+  PROCTOR_STATUS: '/proctor/status/',
 };
 
 // ── WebSocket Endpoints ───────────────────────────────────
