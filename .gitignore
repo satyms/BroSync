@@ -64,7 +64,7 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-# db.sqlite3 — committed intentionally so teammates get seeded data
+db.sqlite3
 db.sqlite3-journal
 
 # Flask stuff:
