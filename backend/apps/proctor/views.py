@@ -21,18 +21,18 @@ MAX_VIOLATIONS = 5
 VIOLATION_CACHE_TTL = 60 * 60 * 6  # 6 hours
 
 
-def _cache_key(user_id, contest_id):
-    return f"proctor:violations:{contest_id}:{user_id}"
+def _cache_key(user_id, contest_id, problem_id):
+    return f"proctor:violations:{contest_id}:{problem_id}:{user_id}"
 
 
-def _disqualified_key(user_id, contest_id):
-    return f"proctor:disqualified:{contest_id}:{user_id}"
+def _disqualified_key(user_id, contest_id, problem_id):
+    return f"proctor:disqualified:{contest_id}:{problem_id}:{user_id}"
 
 
 class AnalyzeFrameView(APIView):
     """
     POST /api/v1/proctor/analyze/
-    Body: { "frame": "<base64 data-URI>", "contest_id": "<uuid>" }
+    Body: { "frame": "<base64 data-URI>", "contest_id": "<uuid>", "problem_id": "<uuid>" }
 
     Returns the analysis result and the current violation count.
     If violations exceed MAX_VIOLATIONS the response signals the
@@ -44,6 +44,7 @@ class AnalyzeFrameView(APIView):
     def post(self, request):
         frame_data = request.data.get("frame")
         contest_id = request.data.get("contest_id")
+        problem_id = request.data.get("problem_id", "unknown")
 
         if not frame_data:
             return error_response("Missing 'frame' field.", status_code=400)
@@ -56,7 +57,7 @@ class AnalyzeFrameView(APIView):
         except Contest.DoesNotExist:
             return error_response("Contest not found.", status_code=404)
 
-        if not contest.is_active:
+        if contest.status != "active":
             return error_response("Contest is not active.", status_code=400)
 
         if not ContestParticipation.objects.filter(
@@ -65,7 +66,7 @@ class AnalyzeFrameView(APIView):
             return error_response("You are not a participant of this contest.", status_code=403)
 
         # Check if already disqualified
-        dq_key = _disqualified_key(request.user.id, contest_id)
+        dq_key = _disqualified_key(request.user.id, contest_id, problem_id)
         if cache.get(dq_key):
             return success_response(data={
                 "looking_away": True,
@@ -84,8 +85,8 @@ class AnalyzeFrameView(APIView):
 
         result = analyse_frame(frame_np)
 
-        # Track violations in Redis
-        viol_key = _cache_key(request.user.id, contest_id)
+        # Track violations in cache (per problem)
+        viol_key = _cache_key(request.user.id, contest_id, problem_id)
         violations = cache.get(viol_key, 0)
 
         if result["looking_away"]:
@@ -108,7 +109,7 @@ class AnalyzeFrameView(APIView):
 
 class ViolationStatusView(APIView):
     """
-    GET /api/v1/proctor/status/?contest_id=<uuid>
+    GET /api/v1/proctor/status/?contest_id=<uuid>&problem_id=<uuid>
 
     Returns the current violation count without sending a frame.
     Useful for reconnection / page refresh.
@@ -118,11 +119,12 @@ class ViolationStatusView(APIView):
 
     def get(self, request):
         contest_id = request.query_params.get("contest_id")
+        problem_id = request.query_params.get("problem_id", "unknown")
         if not contest_id:
             return error_response("Missing 'contest_id' param.", status_code=400)
 
-        viol_key = _cache_key(request.user.id, contest_id)
-        dq_key = _disqualified_key(request.user.id, contest_id)
+        viol_key = _cache_key(request.user.id, contest_id, problem_id)
+        dq_key = _disqualified_key(request.user.id, contest_id, problem_id)
         violations = cache.get(viol_key, 0)
         disqualified = bool(cache.get(dq_key))
 

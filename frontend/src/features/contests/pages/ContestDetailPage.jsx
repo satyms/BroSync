@@ -141,7 +141,7 @@ export default function ContestDetailPage() {
                       </span>
                       <div>
                         <Link
-                          to={`/problems/${problem.slug}`}
+                          to={`/contests/${slug}/problems/${problem.slug}`}
                           className="text-text-primary hover:text-brand-blue font-medium transition-colors"
                         >
                           {problem.title}
