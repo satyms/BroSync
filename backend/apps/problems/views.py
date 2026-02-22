@@ -51,12 +51,29 @@ class ProblemDetailView(APIView):
     """
     GET /api/v1/problems/<slug>/
     Get full problem detail with sample test cases.
+
+    Optional query param:
+      ?contest=<contest-slug>  — allows access to unpublished problems that
+                                  belong to the specified contest.
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, slug):
+        contest_slug = request.query_params.get("contest")
         try:
-            problem = ProblemService.get_by_slug(slug)
+            if contest_slug:
+                # Allow unpublished problems that are linked to this contest
+                from apps.contests.models import ContestProblem
+                problem = (
+                    Problem.objects
+                    .select_related("category", "created_by")
+                    .get(
+                        slug=slug,
+                        contestproblem__contest__slug=contest_slug,
+                    )
+                )
+            else:
+                problem = ProblemService.get_by_slug(slug)
         except Problem.DoesNotExist:
             return error_response("Problem not found.", status.HTTP_404_NOT_FOUND)
 
@@ -77,8 +94,15 @@ class ProblemSolversView(APIView):
         from apps.submissions.models import Submission
         from django.db.models import Min, Count
 
+        contest_slug = request.query_params.get("contest")
         try:
-            problem = Problem.objects.get(slug=slug, is_published=True)
+            if contest_slug:
+                problem = Problem.objects.get(
+                    slug=slug,
+                    contestproblem__contest__slug=contest_slug,
+                )
+            else:
+                problem = Problem.objects.get(slug=slug, is_published=True)
         except Problem.DoesNotExist:
             return error_response("Problem not found.", status_code=404)
 

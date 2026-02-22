@@ -303,7 +303,7 @@ export default function ProblemDetailPage() {
   }, []);
 
   useEffect(() => {
-    problemsService.getProblem(slug)
+    problemsService.getProblem(slug, contestSlug || null)
       .then((p) => {
         setProblem(p);
         // Pre-fill stdin with the first sample test case input
@@ -320,7 +320,7 @@ export default function ProblemDetailPage() {
   useEffect(() => {
     if (activeTab === 'solvers' && problem && solvers.length === 0 && !solversLoading) {
       setSolversLoading(true);
-      problemsService.getSolvers(slug)
+      problemsService.getSolvers(slug, contestSlug || null)
         .then(setSolvers)
         .catch(() => setSolvers([]))
         .finally(() => setSolversLoading(false));
