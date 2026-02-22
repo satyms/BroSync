@@ -28,7 +28,7 @@ export default function useProctoring({ enabled, contestId, onDisqualified }) {
   const [cameraReady, setCameraReady] = useState(false);
 
   const videoRef = useRef(null);
-  const canvasRef = useRef(document.createElement('canvas'));
+  const canvasRef = useRef(null);
   const intervalRef = useRef(null);
   const analysingRef = useRef(false);
   const disqualifiedRef = useRef(false);
@@ -68,11 +68,6 @@ export default function useProctoring({ enabled, contestId, onDisqualified }) {
     if (stream && videoRef.current) {
       videoRef.current.srcObject = stream;
     }
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
-      }
-    };
   }, [stream]);
 
   // ── Fetch existing violation count on mount ─────────────
@@ -99,6 +94,7 @@ export default function useProctoring({ enabled, contestId, onDisqualified }) {
 
     try {
       const video = videoRef.current;
+      if (!canvasRef.current) canvasRef.current = document.createElement('canvas');
       const canvas = canvasRef.current;
       canvas.width = video.videoWidth || 320;
       canvas.height = video.videoHeight || 240;
