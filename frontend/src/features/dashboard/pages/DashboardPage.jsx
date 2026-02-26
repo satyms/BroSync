@@ -16,6 +16,8 @@ export default function DashboardPage() {
   const { user } = useSelector((s) => s.auth);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activityData, setActivityData] = useState({});
+  const [activityLoading, setActivityLoading] = useState(true);
 
   // Always fetch fresh profile so solved-count updates after submitting
   useEffect(() => {
@@ -27,6 +29,13 @@ export default function DashboardPage() {
       .then((r) => setSubmissions(r.data?.results || r.data?.data?.results || r.data?.data || r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    axiosInstance.get(API_ROUTES.ACTIVITY_HEATMAP)
+      .then((r) => setActivityData(r.data?.data || r.data || {}))
+      .catch(() => {})
+      .finally(() => setActivityLoading(false));
   }, []);
 
   if (!user) return <PageLoader />;
@@ -136,7 +145,7 @@ export default function DashboardPage() {
         <h2 className="text-xs font-semibold text-[#475569] dark:text-[#94A3B8] tracking-widest uppercase mb-4">
           Activity — Last 12 Months
         </h2>
-        <ActivityMatrix />
+        <ActivityMatrix data={activityData} loading={activityLoading} />
       </div>
 
       {/* ── Recent Submissions ───────────────────────────────────────── */}
@@ -173,10 +182,10 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <StatusBadge status={sub.status} />
                   <Link
-                    to={`/problems/${sub.problem?.slug}`}
+                    to={`/problems/${sub.problem_slug}`}
                     className="text-[#0F172A] dark:text-[#E2E8F0] text-sm hover:text-blue-500 transition-colors truncate font-medium"
                   >
-                    {sub.problem?.title || 'Unknown Problem'}
+                    {sub.problem_title || 'Unknown Problem'}
                   </Link>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-[#64748B] font-mono flex-shrink-0">

@@ -82,6 +82,7 @@ function ThemedApp() {
             <Route path="/dashboard" element={<AuthenticatedLayout><DashboardPage /></AuthenticatedLayout>} />
             <Route path="/problems" element={<AuthenticatedLayout><ProblemsPage /></AuthenticatedLayout>} />
             <Route path="/problems/:slug" element={<AuthenticatedLayout><ProblemDetailPage /></AuthenticatedLayout>} />
+            <Route path="/contests/:contestSlug/problems/:slug" element={<AuthenticatedLayout><ProblemDetailPage /></AuthenticatedLayout>} />
             <Route path="/submissions" element={<AuthenticatedLayout><SubmissionsPage /></AuthenticatedLayout>} />
             <Route path="/contests" element={<AuthenticatedLayout><ContestsPage /></AuthenticatedLayout>} />
             <Route path="/contests/:slug" element={<AuthenticatedLayout><ContestDetailPage /></AuthenticatedLayout>} />

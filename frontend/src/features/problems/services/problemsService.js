@@ -10,9 +10,12 @@ export const problemsService = {
 
   /**
    * Get a single problem by slug.
+   * Pass contestSlug to access unpublished problems that belong to a contest.
    */
-  getProblem: (slug) =>
-    axiosInstance.get(API_ROUTES.PROBLEM_DETAIL(slug)).then((r) => r.data?.data || r.data),
+  getProblem: (slug, contestSlug = null) =>
+    axiosInstance
+      .get(API_ROUTES.PROBLEM_DETAIL(slug), contestSlug ? { params: { contest: contestSlug } } : {})
+      .then((r) => r.data?.data || r.data),
 
   /**
    * Get all categories.
@@ -28,7 +31,10 @@ export const problemsService = {
 
   /**
    * Get the solvers leaderboard for a problem.
+   * Pass contestSlug to support unpublished contest problems.
    */
-  getSolvers: (slug) =>
-    axiosInstance.get(API_ROUTES.PROBLEM_SOLVERS(slug)).then((r) => r.data?.data || []),
+  getSolvers: (slug, contestSlug = null) =>
+    axiosInstance
+      .get(API_ROUTES.PROBLEM_SOLVERS(slug), contestSlug ? { params: { contest: contestSlug } } : {})
+      .then((r) => r.data?.data || []),
 };
