@@ -8,7 +8,7 @@
         "id": "arrays-hashing",
         "label": "Arrays & Hashing",
         "description": "Foundation of DSA. Learn array operations, hash maps, and hash sets.",
-        "topics": ["Array operations", "Hash Maps", "Hash Sets", "Two Sum", "Contains Duplicate", "Anagrams"],
+        "topics": ["Arrays", "Hash Maps", "Hash Tables", "Two Pointers", "Big O Notation", "Time Complexity"],
         "level": 0,
         "order": 1,
         "children": ["two-pointers", "stack"]
@@ -17,7 +17,7 @@
         "id": "two-pointers",
         "label": "Two Pointers",
         "description": "Technique using two indices to scan arrays efficiently.",
-        "topics": ["Valid Palindrome", "Two Sum II", "3Sum", "Container With Most Water"],
+        "topics": ["Two Pointers", "Arrays", "Sorting Algorithms", "Binary Search"],
         "level": 1,
         "order": 1,
         "children": ["sliding-window", "linked-list"]
@@ -26,7 +26,7 @@
         "id": "stack",
         "label": "Stack",
         "description": "LIFO data structure. Used in expression evaluation, backtracking.",
-        "topics": ["Valid Parentheses", "Min Stack", "Reverse Polish Notation", "Daily Temperatures"],
+        "topics": ["Stacks", "Queues", "Arrays", "Recursion"],
         "level": 1,
         "order": 2,
         "children": ["binary-search"]
@@ -35,7 +35,7 @@
         "id": "sliding-window",
         "label": "Sliding Window",
         "description": "Optimize subarray/substring problems using a moving window.",
-        "topics": ["Best Time to Buy Stock", "Longest Substring Without Repeating", "Minimum Window Substring"],
+        "topics": ["Sliding Window", "Arrays", "Hash Maps", "Big O Notation"],
         "level": 2,
         "order": 1,
         "children": ["trees"]
@@ -44,7 +44,7 @@
         "id": "linked-list",
         "label": "Linked List",
         "description": "Nodes connected via pointers. Learn traversal, reversal, and cycle detection.",
-        "topics": ["Reverse Linked List", "Merge Two Sorted Lists", "Reorder List", "Detect Cycle", "LRU Cache"],
+        "topics": ["Linked Lists", "Arrays", "Hash Maps", "Recursion"],
         "level": 2,
         "order": 2,
         "children": ["trees"]
@@ -53,7 +53,7 @@
         "id": "binary-search",
         "label": "Binary Search",
         "description": "Divide and conquer search. Works on sorted data in O(log n).",
-        "topics": ["Binary Search", "Search 2D Matrix", "Koko Eating Bananas", "Find in Rotated Array"],
+        "topics": ["Binary Search", "Arrays", "Sorting Algorithms", "Big O Notation"],
         "level": 2,
         "order": 3,
         "children": ["trees"]
@@ -62,7 +62,7 @@
         "id": "trees",
         "label": "Trees",
         "description": "Hierarchical data structure. Master traversal, BST, and balanced trees.",
-        "topics": ["Invert Binary Tree", "Max Depth", "Diameter", "Balance Check", "BST Operations", "Kth Smallest"],
+        "topics": ["Trees", "Binary Search Tree", "DFS", "BFS", "Recursion", "Heaps"],
         "level": 3,
         "order": 1,
         "children": ["tries", "heap-priority-queue", "backtracking"]
@@ -71,7 +71,7 @@
         "id": "tries",
         "label": "Tries",
         "description": "Prefix tree for efficient string searching and autocomplete.",
-        "topics": ["Implement Trie", "Search Word", "Word Search II"],
+        "topics": ["Trees", "Hash Maps", "Recursion", "Arrays"],
         "level": 4,
         "order": 1,
         "children": ["graphs"]
@@ -80,7 +80,7 @@
         "id": "heap-priority-queue",
         "label": "Heap / Priority Queue",
         "description": "Complete binary tree used for efficient min/max retrieval.",
-        "topics": ["Kth Largest Element", "K Closest Points", "Task Scheduler", "Find Median from Stream"],
+        "topics": ["Heaps", "Arrays", "Sorting Algorithms", "Big O Notation"],
         "level": 4,
         "order": 2,
         "children": ["graphs"]
@@ -89,7 +89,7 @@
         "id": "backtracking",
         "label": "Backtracking",
         "description": "Explore all possibilities recursively and prune invalid paths.",
-        "topics": ["Subsets", "Combination Sum", "Permutations", "N-Queens", "Sudoku Solver"],
+        "topics": ["DFS", "Recursion", "Arrays", "Dynamic Programming"],
         "level": 4,
         "order": 3,
         "children": ["graphs"]
@@ -98,7 +98,7 @@
         "id": "graphs",
         "label": "Graphs",
         "description": "BFS, DFS, topological sort, and shortest paths on graphs.",
-        "topics": ["Number of Islands", "Clone Graph", "Pacific Atlantic", "Course Schedule", "Dijkstra", "Bellman-Ford"],
+        "topics": ["Graphs", "BFS", "DFS", "Hash Maps", "Arrays", "Big O Notation"],
         "level": 5,
         "order": 1,
         "children": ["dynamic-programming-1d", "advanced-graphs"]
@@ -107,7 +107,7 @@
         "id": "dynamic-programming-1d",
         "label": "Dynamic Programming 1D",
         "description": "Memoization and tabulation for overlapping subproblems.",
-        "topics": ["Climbing Stairs", "House Robber", "Longest Palindromic Substring", "Coin Change", "Word Break"],
+        "topics": ["Dynamic Programming", "Arrays", "Recursion", "Big O Notation"],
         "level": 6,
         "order": 1,
         "children": ["dynamic-programming-2d"]
@@ -116,7 +116,7 @@
         "id": "advanced-graphs",
         "label": "Advanced Graphs",
         "description": "Minimum spanning tree, union find, and advanced graph algorithms.",
-        "topics": ["Union Find", "Prim's Algorithm", "Kruskal's", "Alien Dictionary", "Swim in Rising Water"],
+        "topics": ["Graphs", "BFS", "DFS", "Greedy Algorithms", "Big O Notation"],
         "level": 6,
         "order": 2,
         "children": ["dynamic-programming-2d"]
@@ -125,7 +125,7 @@
         "id": "dynamic-programming-2d",
         "label": "Dynamic Programming 2D",
         "description": "2D DP for grid problems, string matching, and interval problems.",
-        "topics": ["Unique Paths", "Longest Common Subsequence", "Best Time to Buy Stock with Cooldown", "Edit Distance"],
+        "topics": ["Dynamic Programming", "Arrays", "Recursion", "Big O Notation", "Binary Search"],
         "level": 7,
         "order": 1,
         "children": ["greedy", "intervals", "bit-manipulation"]
@@ -134,7 +134,7 @@
         "id": "greedy",
         "label": "Greedy",
         "description": "Make locally optimal choices at each step to find global optimum.",
-        "topics": ["Maximum Subarray", "Jump Game", "Gas Station", "Hand of Straights", "Partition Labels"],
+        "topics": ["Greedy Algorithms", "Arrays", "Sorting Algorithms", "Big O Notation"],
         "level": 8,
         "order": 1,
         "children": ["math-geometry"]
@@ -143,7 +143,7 @@
         "id": "intervals",
         "label": "Intervals",
         "description": "Merge, insert, and find non-overlapping intervals.",
-        "topics": ["Insert Interval", "Merge Intervals", "Non-Overlapping Intervals", "Meeting Rooms II"],
+        "topics": ["Arrays", "Sorting Algorithms", "Binary Search", "Big O Notation"],
         "level": 8,
         "order": 2,
         "children": ["math-geometry"]
@@ -152,7 +152,7 @@
         "id": "bit-manipulation",
         "label": "Bit Manipulation",
         "description": "Use bitwise operations for efficient solutions.",
-        "topics": ["Single Number", "Number of 1 Bits", "Counting Bits", "Reverse Bits", "Missing Number"],
+        "topics": ["Arrays", "Big O Notation", "Time Complexity", "Recursion"],
         "level": 8,
         "order": 3,
         "children": ["math-geometry"]
@@ -161,7 +161,7 @@
         "id": "math-geometry",
         "label": "Math & Geometry",
         "description": "Mathematical techniques for coding problems.",
-        "topics": ["Rotate Image", "Spiral Matrix", "Set Matrix Zeroes", "Happy Number", "Plus One", "Pow(x,n)"],
+        "topics": ["Arrays", "Sorting Algorithms", "Recursion", "Big O Notation"],
         "level": 9,
         "order": 1,
         "children": []
@@ -177,7 +177,7 @@
         "id": "py-basics",
         "label": "Learn the Basics",
         "description": "Core Python syntax, variables, and control flow.",
-        "topics": ["Basic Syntax", "Variables & Data Types", "Conditionals", "Type Casting", "Exceptions", "Functions", "Builtin Functions"],
+        "topics": ["Syntax", "Variables", "Data Types", "Conditionals", "Type Casting", "Exceptions", "Functions"],
         "level": 0,
         "order": 1,
         "children": ["py-data-structures", "py-oop"]
@@ -186,7 +186,7 @@
         "id": "py-data-structures",
         "label": "Data Structures",
         "description": "Python's built-in and custom data structures.",
-        "topics": ["Lists", "Tuples", "Sets", "Dictionaries", "Arrays", "Linked Lists", "Heaps", "Stacks", "Queues", "HashMaps", "BST"],
+        "topics": ["Lists", "Tuples", "Sets", "Dictionaries", "Linked Lists", "Heaps", "Stacks", "Queues", "Hash Maps", "Binary Search Tree"],
         "level": 1,
         "order": 1,
         "children": ["py-algorithms"]
@@ -195,7 +195,7 @@
         "id": "py-oop",
         "label": "Object Oriented Programming",
         "description": "Classes, inheritance, and design patterns in Python.",
-        "topics": ["Classes", "Inheritance", "Methods", "Dunder Methods", "Dataclasses", "Abstract Classes"],
+        "topics": ["OOP", "Inheritance", "Classes", "Decorators", "Iterators", "Generators"],
         "level": 1,
         "order": 2,
         "children": ["py-algorithms"]
@@ -292,7 +292,7 @@
         "id": "web-javascript",
         "label": "JavaScript",
         "description": "The programming language of the web.",
-        "topics": ["Variables", "Functions", "DOM Manipulation", "Events", "Fetch API", "Promises", "Async/Await", "ES6+ Features", "Modules"],
+        "topics": ["JavaScript Basics", "DOM Manipulation", "Events", "Fetch API", "Promises", "Async/Await", "ES6+ Features"],
         "level": 1,
         "order": 1,
         "children": ["web-git", "web-npm"]
@@ -301,7 +301,7 @@
         "id": "web-git",
         "label": "Git & GitHub",
         "description": "Version control for collaborative development.",
-        "topics": ["git init", "commit", "branch", "merge", "rebase", "pull requests", "GitHub Actions"],
+        "topics": ["Git Intro", "Git Commit", "Git Branch", "Git Merge", "GitHub"],
         "level": 2,
         "order": 1,
         "children": ["web-react"]
@@ -310,7 +310,7 @@
         "id": "web-npm",
         "label": "npm / Package Managers",
         "description": "Manage JavaScript packages and dependencies.",
-        "topics": ["npm install", "package.json", "scripts", "yarn", "pnpm", "npx"],
+        "topics": ["npm", "Node.js", "JavaScript Basics", "JSON"],
         "level": 2,
         "order": 2,
         "children": ["web-react"]
@@ -319,7 +319,7 @@
         "id": "web-react",
         "label": "React",
         "description": "The most popular frontend library for building UIs.",
-        "topics": ["Components", "Props & State", "Hooks", "useEffect", "Context API", "Redux", "React Router", "Vite"],
+        "topics": ["React", "JavaScript Basics", "CSS Basics", "DOM Manipulation", "Fetch API"],
         "level": 3,
         "order": 1,
         "children": ["web-tailwind", "web-backend-start"]
@@ -328,7 +328,7 @@
         "id": "web-tailwind",
         "label": "Tailwind CSS",
         "description": "Utility-first CSS framework for rapid UI development.",
-        "topics": ["Utility Classes", "Responsive Prefixes", "Dark Mode", "Custom Config", "Component Patterns"],
+        "topics": ["CSS Basics", "Responsive Design", "CSS Variables", "Flexbox", "Grid"],
         "level": 4,
         "order": 1,
         "children": ["web-typescript"]
@@ -337,7 +337,7 @@
         "id": "web-backend-start",
         "label": "Backend Development",
         "description": "Server-side programming for APIs and databases.",
-        "topics": ["HTTP Methods", "REST API Design", "Status Codes", "JSON", "Middleware", "Authentication"],
+        "topics": ["REST API", "Node.js", "JSON", "JavaScript Basics", "Fetch API"],
         "level": 4,
         "order": 2,
         "children": ["web-nodejs"]
@@ -346,7 +346,7 @@
         "id": "web-typescript",
         "label": "TypeScript",
         "description": "Typed superset of JavaScript for large-scale apps.",
-        "topics": ["Types", "Interfaces", "Generics", "Enums", "Type Guards", "tsconfig"],
+        "topics": ["TypeScript Basics", "JavaScript Basics", "ES6+ Features", "Classes", "Functions"],
         "level": 5,
         "order": 1,
         "children": ["web-testing"]
@@ -355,7 +355,7 @@
         "id": "web-nodejs",
         "label": "Node.js",
         "description": "JavaScript runtime for server-side development.",
-        "topics": ["Express.js", "Middleware", "REST APIs", "JWT Auth", "File System", "Environment Variables"],
+        "topics": ["Node.js", "npm", "REST API", "JSON", "JavaScript Basics"],
         "level": 5,
         "order": 2,
         "children": ["web-databases"]
@@ -364,7 +364,7 @@
         "id": "web-databases",
         "label": "Databases",
         "description": "Store and query data with SQL and NoSQL solutions.",
-        "topics": ["PostgreSQL", "MySQL", "SQLite", "MongoDB", "Redis", "ORMs", "Migrations", "Indexing"],
+        "topics": ["SQL Basics", "MongoDB", "JSON", "REST API", "Node.js"],
         "level": 6,
         "order": 1,
         "children": ["web-testing", "web-devops"]
@@ -373,7 +373,7 @@
         "id": "web-testing",
         "label": "Testing",
         "description": "Ensure code quality with automated tests.",
-        "topics": ["Jest", "Vitest", "React Testing Library", "Cypress", "Playwright", "Unit Tests", "E2E Tests"],
+        "topics": ["JavaScript Basics", "HTML Basics", "CSS Basics", "Fetch API"],
         "level": 7,
         "order": 1,
         "children": ["web-devops"]
@@ -382,7 +382,7 @@
         "id": "web-devops",
         "label": "DevOps & Deployment",
         "description": "Ship and scale your applications.",
-        "topics": ["Docker", "CI/CD", "GitHub Actions", "AWS EC2/S3", "Nginx", "Vercel", "Railway", "Linux Basics"],
+        "topics": ["Docker", "CI/CD", "Node.js", "JavaScript Basics", "REST API"],
         "level": 8,
         "order": 1,
         "children": []

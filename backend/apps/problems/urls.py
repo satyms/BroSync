@@ -11,6 +11,8 @@ app_name = "problems"
 urlpatterns = [
     # Roadmap tree
     path("roadmaps/", views.RoadmapView.as_view(), name="roadmaps"),
+    # Topic learn content (W3Schools scraper)
+    path("learn/", views.TopicLearnView.as_view(), name="learn"),
 
     # Public endpoints
     path("", views.ProblemListView.as_view(), name="list"),

@@ -64,7 +64,8 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-# db.sqlite3 — excluded from git to avoid binary merge conflicts; use dumpdata/loaddata instead
+# db.sqlite3 — committed intentionally so teammates get seeded data
+db.sqlite3-journal
 
 # Flask stuff:
 instance/
