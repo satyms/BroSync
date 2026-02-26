@@ -1,12 +1,4 @@
-﻿[
-{
-  "model": "sessions.session",
-  "pk": "cxp8j1pli91u6e6ypag3o3uscy1uem84",
-  "fields": {
-    "session_data": ".eJxVjEsOwjAMBe-SNY1SHLsJS_acoXJihxZQK_WzQtydVuoCdk-amfc2La9L166zTm0v5mIII0pmqVIUqjwn3RZq5ZJCaKARSsWcfrPE-anD3sqDh_to8zgsU5_srtiDzvY2ir6uh_t30PHcbXUAjM4VwYAZvISIgZQlFGBUzrGuE5yRgCCjSx68IyhQGvYUpORsPl9knUGR:1vtnEm:jfcJcp6Ttg-oAPUEG-4ScUdXmhP3Zi268kGVSpm9L8s",
-    "expire_date": "2026-03-07T13:41:36.389Z"
-  }
-},
+[
 {
   "model": "accounts.user",
   "fields": {
@@ -24,6 +16,8 @@
     "problems_solved": 1,
     "contests_participated": 0,
     "rating": 0,
+    "battles_played": 0,
+    "battles_won": 0,
     "date_joined": "2026-02-21T13:39:03.307Z",
     "last_login": "2026-02-21T16:26:46.505Z",
     "updated_at": "2026-02-21T14:54:39.782Z",
@@ -48,6 +42,8 @@
     "problems_solved": 1,
     "contests_participated": 0,
     "rating": 0,
+    "battles_played": 0,
+    "battles_won": 0,
     "date_joined": "2026-02-21T13:29:44.037Z",
     "last_login": "2026-02-22T04:34:31.013Z",
     "updated_at": "2026-02-21T13:29:45.062Z",
@@ -72,9 +68,37 @@
     "problems_solved": 2,
     "contests_participated": 0,
     "rating": 0,
+    "battles_played": 0,
+    "battles_won": 0,
     "date_joined": "2026-02-21T22:51:56.658Z",
     "last_login": "2026-02-22T07:02:59.278Z",
     "updated_at": "2026-02-21T22:51:57.721Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$MGaQOXLuabQjBCWoDjsZcX$7qPz9Nx/17myh8WFTEqA8PoW+uJNKODXebPjXH26Qjc=",
+    "is_superuser": false,
+    "email": "abhi123@gmail.com",
+    "username": "abhi",
+    "first_name": "abhijeet",
+    "last_name": "yadav",
+    "role": "user",
+    "is_staff": false,
+    "is_active": true,
+    "avatar_url": "",
+    "bio": "",
+    "problems_solved": 1,
+    "contests_participated": 0,
+    "rating": 0,
+    "battles_played": 7,
+    "battles_won": 0,
+    "date_joined": "2026-02-21T23:47:32.170Z",
+    "last_login": "2026-02-22T06:43:25.839Z",
+    "updated_at": "2026-02-21T23:47:33.031Z",
     "groups": [],
     "user_permissions": []
   }
@@ -3078,6 +3102,27 @@
 },
 {
   "model": "submissions.submission",
+  "pk": "d2e1e6d8-015b-4e8c-9459-6ac25892ebd1",
+  "fields": {
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "problem": "3f8d6054-4568-4305-8674-4c59bdab5f2b",
+    "contest": null,
+    "language": "python",
+    "code": "# Write your solution here\na, b = map(int, input().split())\nprint(a + b)",
+    "status": "accepted",
+    "execution_time_ms": 156,
+    "memory_used_kb": 0,
+    "test_cases_passed": 3,
+    "total_test_cases": 3,
+    "error_output": "",
+    "submitted_at": "2026-02-21T23:49:08.916Z",
+    "judged_at": "2026-02-21T23:49:09.807Z"
+  }
+},
+{
+  "model": "submissions.submission",
   "pk": "d6b6526c-bd7d-4d25-890d-420cc4b6cf8b",
   "fields": {
     "user": [
@@ -3681,6 +3726,995 @@
     "is_verified": false,
     "created_at": "2026-02-21T22:57:35.988Z",
     "updated_at": "2026-02-21T22:57:35.988Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "13623a89-467f-4699-81a1-f3f79b45255c",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "accepted",
+    "expires_at": "2026-02-22T02:11:36.393Z",
+    "created_at": "2026-02-22T02:06:36.394Z",
+    "updated_at": "2026-02-22T02:06:36.394Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "43d1b2f6-5d09-4487-8767-dda4a549e69e",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "expired",
+    "expires_at": "2026-02-21T23:54:40.783Z",
+    "created_at": "2026-02-21T23:49:40.784Z",
+    "updated_at": "2026-02-21T23:49:40.784Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "5bb011f9-8ded-4965-83a6-977b5475ed1c",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "accepted",
+    "expires_at": "2026-02-22T00:44:09.230Z",
+    "created_at": "2026-02-22T00:39:09.231Z",
+    "updated_at": "2026-02-22T00:39:09.231Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "66689422-99b1-4a0d-b6a1-61ec28835c5b",
+  "fields": {
+    "challenger": [
+      "abhi123@gmail.com"
+    ],
+    "opponent": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "accepted",
+    "expires_at": "2026-02-22T02:44:55.514Z",
+    "created_at": "2026-02-22T02:39:55.515Z",
+    "updated_at": "2026-02-22T02:39:55.515Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "76944c71-77db-4065-b770-7a1697e82ab6",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "accepted",
+    "expires_at": "2026-02-22T07:07:57.179Z",
+    "created_at": "2026-02-22T07:02:57.180Z",
+    "updated_at": "2026-02-22T07:02:57.180Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "91d34455-4441-4453-9d32-ab8e0db90d3f",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "accepted",
+    "expires_at": "2026-02-22T02:14:29.479Z",
+    "created_at": "2026-02-22T02:09:29.480Z",
+    "updated_at": "2026-02-22T02:09:29.480Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "a837537d-74d1-4111-98ec-2d2290e2addd",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "accepted",
+    "expires_at": "2026-02-22T01:06:11.494Z",
+    "created_at": "2026-02-22T01:01:11.501Z",
+    "updated_at": "2026-02-22T01:01:11.501Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "ad66cc94-806e-4226-b077-2d326a24204b",
+  "fields": {
+    "challenger": [
+      "admin123@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "cancelled",
+    "expires_at": "2026-02-22T00:12:28.901Z",
+    "created_at": "2026-02-22T00:07:28.917Z",
+    "updated_at": "2026-02-22T00:07:28.917Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "b93833a2-a863-43cf-9e39-6e4fd19c20f1",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "expired",
+    "expires_at": "2026-02-22T00:32:14.516Z",
+    "created_at": "2026-02-22T00:27:14.524Z",
+    "updated_at": "2026-02-22T00:27:14.524Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "c1b5c9ea-af03-40cf-92ba-e992f7eca3e7",
+  "fields": {
+    "challenger": [
+      "abhi123@gmail.com"
+    ],
+    "opponent": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "accepted",
+    "expires_at": "2026-02-22T07:17:06.517Z",
+    "created_at": "2026-02-22T07:12:06.531Z",
+    "updated_at": "2026-02-22T07:12:06.531Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "cfe09973-ea79-4038-a2ef-41ab20ce7dc0",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "accepted",
+    "expires_at": "2026-02-22T02:36:55.343Z",
+    "created_at": "2026-02-22T02:31:55.343Z",
+    "updated_at": "2026-02-22T02:31:55.343Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "e22d9ca9-ec37-4be3-bd8b-b30ef5612599",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "admin123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "expired",
+    "expires_at": "2026-02-21T23:47:51.986Z",
+    "created_at": "2026-02-21T23:42:52.011Z",
+    "updated_at": "2026-02-21T23:42:52.011Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "e89ce812-92f0-40c4-afbe-03a115c232f8",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "accepted",
+    "expires_at": "2026-02-22T01:25:29.988Z",
+    "created_at": "2026-02-22T01:20:29.989Z",
+    "updated_at": "2026-02-22T01:20:29.989Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "f4385576-6291-4828-b7f5-e21e759aaedd",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "accepted",
+    "expires_at": "2026-02-22T02:19:24.560Z",
+    "created_at": "2026-02-22T02:14:24.563Z",
+    "updated_at": "2026-02-22T02:14:24.563Z"
+  }
+},
+{
+  "model": "battles.battlerequest",
+  "pk": "f64d3344-dfd1-4192-b1f8-422beb1c3044",
+  "fields": {
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "rejected",
+    "expires_at": "2026-02-22T00:43:41.616Z",
+    "created_at": "2026-02-22T00:38:41.618Z",
+    "updated_at": "2026-02-22T00:38:41.618Z"
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "2fbab2cc-0e22-42b5-b304-20ff32f0cacf",
+  "fields": {
+    "battle_request": "cfe09973-ea79-4038-a2ef-41ab20ce7dc0",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "completed",
+    "winner": null,
+    "started_at": "2026-02-22T02:32:11.942Z",
+    "ends_at": "2026-02-22T03:02:11.942Z",
+    "ended_at": "2026-02-22T02:33:38.063Z",
+    "created_at": "2026-02-22T02:32:11.362Z",
+    "updated_at": "2026-02-22T02:32:11.362Z",
+    "problems": [
+      "62d9ce5a-117f-4a51-a00c-372d9766db9e",
+      "bea380d5-2907-4d0a-9e99-3c3031fbf008",
+      "52b117ed-d4e7-40fb-b7cb-7fa0cd5e35b8",
+      "85094062-8063-4b07-b397-a0cf565a9336",
+      "a3635944-f79c-4916-9ccf-14530111db6c"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "3d032c6c-0e4f-4220-870b-8cb85a5c39a3",
+  "fields": {
+    "battle_request": "66689422-99b1-4a0d-b6a1-61ec28835c5b",
+    "challenger": [
+      "abhi123@gmail.com"
+    ],
+    "opponent": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "completed",
+    "winner": null,
+    "started_at": "2026-02-22T02:40:00.957Z",
+    "ends_at": "2026-02-22T03:10:00.957Z",
+    "ended_at": "2026-02-22T02:41:28.550Z",
+    "created_at": "2026-02-22T02:40:00.200Z",
+    "updated_at": "2026-02-22T02:40:00.200Z",
+    "problems": [
+      "62d9ce5a-117f-4a51-a00c-372d9766db9e",
+      "bea380d5-2907-4d0a-9e99-3c3031fbf008",
+      "52b117ed-d4e7-40fb-b7cb-7fa0cd5e35b8",
+      "85094062-8063-4b07-b397-a0cf565a9336",
+      "a3635944-f79c-4916-9ccf-14530111db6c"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "55a119f9-cbcd-45a8-8eda-55885a916c7a",
+  "fields": {
+    "battle_request": "91d34455-4441-4453-9d32-ab8e0db90d3f",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "completed",
+    "winner": null,
+    "started_at": "2026-02-22T02:09:45.355Z",
+    "ends_at": "2026-02-22T02:39:45.355Z",
+    "ended_at": "2026-02-22T02:13:40.773Z",
+    "created_at": "2026-02-22T02:09:44.673Z",
+    "updated_at": "2026-02-22T02:09:44.673Z",
+    "problems": [
+      "62d9ce5a-117f-4a51-a00c-372d9766db9e",
+      "bea380d5-2907-4d0a-9e99-3c3031fbf008",
+      "52b117ed-d4e7-40fb-b7cb-7fa0cd5e35b8",
+      "85094062-8063-4b07-b397-a0cf565a9336",
+      "a3635944-f79c-4916-9ccf-14530111db6c"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "90c3a83f-6950-4eb0-bc6c-174067dbe154",
+  "fields": {
+    "battle_request": "76944c71-77db-4065-b770-7a1697e82ab6",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "completed",
+    "winner": null,
+    "started_at": "2026-02-22T07:03:06.372Z",
+    "ends_at": "2026-02-22T07:33:06.372Z",
+    "ended_at": "2026-02-22T07:04:41.203Z",
+    "created_at": "2026-02-22T07:03:05.718Z",
+    "updated_at": "2026-02-22T07:03:05.718Z",
+    "problems": [
+      "718a34d3-bc1d-4d02-bcf1-8bacef195b1c",
+      "347bede8-9f30-4a21-9702-bbccf845b5b9",
+      "37a98346-d9d4-4493-a069-508d6240508a",
+      "838705d1-db03-4bce-a68b-9e1f442985df",
+      "3f8d6054-4568-4305-8674-4c59bdab5f2b"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "a205d82c-e78f-4873-8db1-fb9fd828085f",
+  "fields": {
+    "battle_request": "f4385576-6291-4828-b7f5-e21e759aaedd",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "completed",
+    "winner": null,
+    "started_at": "2026-02-22T02:14:30.308Z",
+    "ends_at": "2026-02-22T02:44:30.308Z",
+    "ended_at": "2026-02-22T02:16:29.059Z",
+    "created_at": "2026-02-22T02:14:29.640Z",
+    "updated_at": "2026-02-22T02:14:29.640Z",
+    "problems": [
+      "718a34d3-bc1d-4d02-bcf1-8bacef195b1c",
+      "2563502d-e4da-4844-a621-d29eb83f2aee",
+      "347bede8-9f30-4a21-9702-bbccf845b5b9",
+      "838705d1-db03-4bce-a68b-9e1f442985df",
+      "3f8d6054-4568-4305-8674-4c59bdab5f2b"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "ad906a93-7c02-421c-a6f8-bedcb8ec386b",
+  "fields": {
+    "battle_request": "c1b5c9ea-af03-40cf-92ba-e992f7eca3e7",
+    "challenger": [
+      "abhi123@gmail.com"
+    ],
+    "opponent": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "active",
+    "winner": null,
+    "started_at": "2026-02-22T07:12:18.499Z",
+    "ends_at": "2026-02-22T07:42:18.499Z",
+    "ended_at": null,
+    "created_at": "2026-02-22T07:12:17.768Z",
+    "updated_at": "2026-02-22T07:12:17.768Z",
+    "problems": [
+      "62d9ce5a-117f-4a51-a00c-372d9766db9e",
+      "bea380d5-2907-4d0a-9e99-3c3031fbf008",
+      "52b117ed-d4e7-40fb-b7cb-7fa0cd5e35b8",
+      "85094062-8063-4b07-b397-a0cf565a9336",
+      "a3635944-f79c-4916-9ccf-14530111db6c"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "c0846eea-aca6-4fbb-8b9c-13a6b06620d6",
+  "fields": {
+    "battle_request": "13623a89-467f-4699-81a1-f3f79b45255c",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "completed",
+    "winner": null,
+    "started_at": "2026-02-22T02:06:43.273Z",
+    "ends_at": "2026-02-22T02:36:43.273Z",
+    "ended_at": "2026-02-22T02:07:38.955Z",
+    "created_at": "2026-02-22T02:06:42.534Z",
+    "updated_at": "2026-02-22T02:06:42.534Z",
+    "problems": [
+      "718a34d3-bc1d-4d02-bcf1-8bacef195b1c",
+      "2563502d-e4da-4844-a621-d29eb83f2aee",
+      "37a98346-d9d4-4493-a069-508d6240508a",
+      "838705d1-db03-4bce-a68b-9e1f442985df",
+      "3f8d6054-4568-4305-8674-4c59bdab5f2b"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "e7144d92-96b9-485d-8956-70441794564c",
+  "fields": {
+    "battle_request": "5bb011f9-8ded-4965-83a6-977b5475ed1c",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "medium",
+    "status": "cancelled",
+    "winner": null,
+    "started_at": null,
+    "ends_at": null,
+    "ended_at": null,
+    "created_at": "2026-02-22T00:39:14.400Z",
+    "updated_at": "2026-02-22T00:39:14.400Z",
+    "problems": [
+      "62d9ce5a-117f-4a51-a00c-372d9766db9e",
+      "bea380d5-2907-4d0a-9e99-3c3031fbf008",
+      "52b117ed-d4e7-40fb-b7cb-7fa0cd5e35b8",
+      "85094062-8063-4b07-b397-a0cf565a9336",
+      "a3635944-f79c-4916-9ccf-14530111db6c"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+  "fields": {
+    "battle_request": "e89ce812-92f0-40c4-afbe-03a115c232f8",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "completed",
+    "winner": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "started_at": "2026-02-22T01:20:35.387Z",
+    "ends_at": "2026-02-22T01:50:35.387Z",
+    "ended_at": "2026-02-22T01:58:50.474Z",
+    "created_at": "2026-02-22T01:20:34.691Z",
+    "updated_at": "2026-02-22T01:20:34.691Z",
+    "problems": [
+      "718a34d3-bc1d-4d02-bcf1-8bacef195b1c",
+      "2563502d-e4da-4844-a621-d29eb83f2aee",
+      "37a98346-d9d4-4493-a069-508d6240508a",
+      "838705d1-db03-4bce-a68b-9e1f442985df",
+      "3f8d6054-4568-4305-8674-4c59bdab5f2b"
+    ]
+  }
+},
+{
+  "model": "battles.battle",
+  "pk": "f026fc57-7a78-4679-9b89-5bf292ad5b1e",
+  "fields": {
+    "battle_request": "a837537d-74d1-4111-98ec-2d2290e2addd",
+    "challenger": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "opponent": [
+      "abhi123@gmail.com"
+    ],
+    "difficulty": "easy",
+    "status": "cancelled",
+    "winner": null,
+    "started_at": "2026-02-22T01:01:19.604Z",
+    "ends_at": "2026-02-22T01:31:19.604Z",
+    "ended_at": null,
+    "created_at": "2026-02-22T01:01:19.008Z",
+    "updated_at": "2026-02-22T01:01:19.008Z",
+    "problems": [
+      "718a34d3-bc1d-4d02-bcf1-8bacef195b1c",
+      "2563502d-e4da-4844-a621-d29eb83f2aee",
+      "347bede8-9f30-4a21-9702-bbccf845b5b9",
+      "37a98346-d9d4-4493-a069-508d6240508a",
+      "838705d1-db03-4bce-a68b-9e1f442985df"
+    ]
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "00116c1d-daf2-4984-8c9e-b3bfb63959da",
+  "fields": {
+    "battle": "c0846eea-aca6-4fbb-8b9c-13a6b06620d6",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:06:42.550Z",
+    "updated_at": "2026-02-22T02:06:42.550Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "0ec78a79-6f47-469a-b3ee-400d834aac74",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 50,
+    "problems_solved": 5,
+    "is_connected": true,
+    "joined_at": "2026-02-22T01:20:34.710Z",
+    "updated_at": "2026-02-22T01:20:34.710Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "1fc8df6c-fd3e-4943-9a79-623d66a9cfa4",
+  "fields": {
+    "battle": "a205d82c-e78f-4873-8db1-fb9fd828085f",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:14:29.669Z",
+    "updated_at": "2026-02-22T02:14:29.669Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "2f3a46f0-f081-4048-8179-402c0ea94479",
+  "fields": {
+    "battle": "3d032c6c-0e4f-4220-870b-8cb85a5c39a3",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:40:00.222Z",
+    "updated_at": "2026-02-22T02:40:00.222Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "377fc307-d778-4373-8b81-181aa2126299",
+  "fields": {
+    "battle": "f026fc57-7a78-4679-9b89-5bf292ad5b1e",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T01:01:19.031Z",
+    "updated_at": "2026-02-22T01:01:19.031Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "396acb8d-44f0-436d-8dd4-cf19e2598994",
+  "fields": {
+    "battle": "90c3a83f-6950-4eb0-bc6c-174067dbe154",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T07:03:05.751Z",
+    "updated_at": "2026-02-22T07:03:05.751Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "4cc9ab79-beda-4b4d-b06f-d496c7de6b24",
+  "fields": {
+    "battle": "55a119f9-cbcd-45a8-8eda-55885a916c7a",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:09:44.693Z",
+    "updated_at": "2026-02-22T02:09:44.693Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "5dbb51e1-3340-44d7-9651-036c50ac8ee2",
+  "fields": {
+    "battle": "ad906a93-7c02-421c-a6f8-bedcb8ec386b",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T07:12:17.838Z",
+    "updated_at": "2026-02-22T07:12:17.838Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "64f75376-62de-4b1e-aba7-c474220def71",
+  "fields": {
+    "battle": "f026fc57-7a78-4679-9b89-5bf292ad5b1e",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T01:01:19.031Z",
+    "updated_at": "2026-02-22T01:01:19.031Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "654ce1b5-9038-49fe-86bd-0ebe90c6875c",
+  "fields": {
+    "battle": "e7144d92-96b9-485d-8956-70441794564c",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T00:39:14.428Z",
+    "updated_at": "2026-02-22T00:39:14.428Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "845d3e3b-be38-4f45-b64e-51e56a4bed24",
+  "fields": {
+    "battle": "c0846eea-aca6-4fbb-8b9c-13a6b06620d6",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:06:42.550Z",
+    "updated_at": "2026-02-22T02:06:42.550Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "864fce10-4f41-41a8-b031-d0444cdf2e34",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 10,
+    "problems_solved": 1,
+    "is_connected": true,
+    "joined_at": "2026-02-22T01:20:34.710Z",
+    "updated_at": "2026-02-22T01:20:34.710Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "91798926-fe7e-4841-b9b8-cc705cf5892d",
+  "fields": {
+    "battle": "2fbab2cc-0e22-42b5-b304-20ff32f0cacf",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:32:11.382Z",
+    "updated_at": "2026-02-22T02:32:11.382Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "9bbe7d62-3730-4234-9d79-48f30ef8479a",
+  "fields": {
+    "battle": "e7144d92-96b9-485d-8956-70441794564c",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": false,
+    "joined_at": "2026-02-22T00:39:14.427Z",
+    "updated_at": "2026-02-22T00:39:14.428Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "a451f831-8f53-4cee-8eba-d9459cc45b0a",
+  "fields": {
+    "battle": "90c3a83f-6950-4eb0-bc6c-174067dbe154",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T07:03:05.751Z",
+    "updated_at": "2026-02-22T07:03:05.751Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "b70aff36-48a7-451f-87fd-fed5a5dba6e1",
+  "fields": {
+    "battle": "55a119f9-cbcd-45a8-8eda-55885a916c7a",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:09:44.693Z",
+    "updated_at": "2026-02-22T02:09:44.693Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "d8bace47-46f0-4c3c-a01c-4d5b24b526fc",
+  "fields": {
+    "battle": "ad906a93-7c02-421c-a6f8-bedcb8ec386b",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T07:12:17.838Z",
+    "updated_at": "2026-02-22T07:12:17.838Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "db5df19f-a71b-4766-bbe2-6150985431cc",
+  "fields": {
+    "battle": "2fbab2cc-0e22-42b5-b304-20ff32f0cacf",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:32:11.382Z",
+    "updated_at": "2026-02-22T02:32:11.382Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "deb59c78-6936-4258-85b6-f85326156aa9",
+  "fields": {
+    "battle": "3d032c6c-0e4f-4220-870b-8cb85a5c39a3",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:40:00.222Z",
+    "updated_at": "2026-02-22T02:40:00.222Z"
+  }
+},
+{
+  "model": "battles.battleparticipant",
+  "pk": "dfa09e72-f631-4906-83bb-3929bbac7fde",
+  "fields": {
+    "battle": "a205d82c-e78f-4873-8db1-fb9fd828085f",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "score": 0,
+    "problems_solved": 0,
+    "is_connected": true,
+    "joined_at": "2026-02-22T02:14:29.669Z",
+    "updated_at": "2026-02-22T02:14:29.669Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "1f8775bb-87e3-423e-b0b7-b6c6d02aa9f1",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "problem": "37a98346-d9d4-4493-a069-508d6240508a",
+    "code": "import sys\n\nS = sys.stdin.read().strip()\n\ncount = 0\nfor char in S:\n    if char in \"aeiouAEIOU\":\n        count += 1\n\nprint(count)\n",
+    "language": "python",
+    "status": "wrong_answer",
+    "points_earned": 0,
+    "error_output": "Test 1: expected '10', got '0'",
+    "execution_time_ms": 48,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:30:30.648Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "2c88072a-2f97-4faf-b44e-c1ac424d4775",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "problem": "2563502d-e4da-4844-a621-d29eb83f2aee",
+    "code": "import sys\n\nS = sys.stdin.read().strip()\n\ncount = 0\nfor char in S:\n    if char in \"aeiouAEIOU\":\n        count += 1\n\nprint(count)\n",
+    "language": "python",
+    "status": "accepted",
+    "points_earned": 10,
+    "error_output": "",
+    "execution_time_ms": 451,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:30:16.042Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "8443d42e-1c65-4db1-abd4-ec87c30d5fd0",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "problem": "3f8d6054-4568-4305-8674-4c59bdab5f2b",
+    "code": "def solution():\n    pass\n",
+    "language": "python",
+    "status": "wrong_answer",
+    "points_earned": 0,
+    "error_output": "Test 1: expected '8', got ''",
+    "execution_time_ms": 2829,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:44:10.847Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "853786f1-95f8-4bc9-826e-dc5fd43e2843",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "problem": "838705d1-db03-4bce-a68b-9e1f442985df",
+    "code": "import sys\n\nS = sys.stdin.read().strip()\n\nprint(S[::-1])\n",
+    "language": "python",
+    "status": "accepted",
+    "points_earned": 10,
+    "error_output": "",
+    "execution_time_ms": 249,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:31:41.920Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "cf2f0fa2-9f05-49aa-8845-0888b9bfe7c1",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "problem": "718a34d3-bc1d-4d02-bcf1-8bacef195b1c",
+    "code": "import sys\n\ndata = sys.stdin.read().strip()\n\nif data:\n    N = int(data)\n\n    if N == 0:\n        print(0)\n    elif N == 1:\n        print(1)\n    else:\n        a, b = 0, 1\n        for _ in range(2, N + 1):\n            a, b = b, a + b\n        print(b)\n",
+    "language": "python",
+    "status": "accepted",
+    "points_earned": 10,
+    "error_output": "",
+    "execution_time_ms": 270,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:28:24.171Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "df263ce7-7b98-45b2-bf6d-68e128d3766a",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "problem": "37a98346-d9d4-4493-a069-508d6240508a",
+    "code": "import sys\n\nN = sys.stdin.read().strip()\n\ntotal = 0\nfor digit in N:\n    total += int(digit)\n\nprint(total)\n",
+    "language": "python",
+    "status": "accepted",
+    "points_earned": 10,
+    "error_output": "",
+    "execution_time_ms": 322,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:31:08.633Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "f472a361-32a1-4288-b604-ffd65d289777",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "abhi123@gmail.com"
+    ],
+    "problem": "718a34d3-bc1d-4d02-bcf1-8bacef195b1c",
+    "code": "import sys\n\ndata = sys.stdin.read().strip()\n\nif data:\n    N = int(data)\n\n    if N == 0:\n        print(0)\n    elif N == 1:\n        print(1)\n    else:\n        a, b = 0, 1\n        for _ in range(2, N + 1):\n            a, b = b, a + b\n        print(b)\n",
+    "language": "python",
+    "status": "accepted",
+    "points_earned": 10,
+    "error_output": "",
+    "execution_time_ms": 739,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:28:03.887Z"
+  }
+},
+{
+  "model": "battles.battlesubmission",
+  "pk": "f6b4bf56-ca0e-4051-9176-5e3bd59958e5",
+  "fields": {
+    "battle": "e7d9f728-e716-477a-b0a5-3da450e0d9df",
+    "user": [
+      "satyaprakash9923@gmail.com"
+    ],
+    "problem": "3f8d6054-4568-4305-8674-4c59bdab5f2b",
+    "code": "import sys\n\ndata = sys.stdin.read().strip().split()\n\nif len(data) == 0:\n    print(0)   # or just do nothing\nelse:\n    a = int(data[0])\n    b = int(data[1])\n    print(a + b)\n",
+    "language": "python",
+    "status": "accepted",
+    "points_earned": 10,
+    "error_output": "",
+    "execution_time_ms": 181,
+    "memory_used_kb": 0,
+    "submitted_at": "2026-02-22T01:33:10.337Z"
   }
 }
 ]

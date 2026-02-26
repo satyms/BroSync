@@ -57,7 +57,7 @@ export default function BattleRoomPage() {
   const [loadingProblem, setLoadingProblem] = useState(false);
 
   // ── Per-question timer ─────────────────────────
-  const Q_TIMER_SECONDS = 10;
+  const Q_TIMER_SECONDS = 30;
   const [qTimeLeft, setQTimeLeft]       = useState(Q_TIMER_SECONDS);
   const [qTimerActive, setQTimerActive] = useState(false);
   const qTimerRef = useRef(null);
@@ -84,6 +84,19 @@ export default function BattleRoomPage() {
       setQTimerActive(true);
     }
   }, [countdown]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fallback: if battle is already 'active' and no countdown is running, start timer
+  useEffect(() => {
+    if (
+      battleState?.status === 'active' &&
+      !battleEnded &&
+      countdown === null &&
+      !qTimerActive
+    ) {
+      setQTimeLeft(Q_TIMER_SECONDS);
+      setQTimerActive(true);
+    }
+  }, [battleState?.status, countdown]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset question timer whenever the active problem changes
   useEffect(() => {
@@ -304,7 +317,7 @@ export default function BattleRoomPage() {
           </div>
 
           {/* Per-question countdown ring */}
-          {qTimerActive && !battleEnded && (() => {
+          {(qTimerActive || countdown === 0) && !battleEnded && (() => {
             const radius = 18;
             const circ   = 2 * Math.PI * radius;
             const pct    = qTimeLeft / Q_TIMER_SECONDS;
@@ -554,6 +567,48 @@ export default function BattleRoomPage() {
       {/* ══ RIGHT COLUMN ═══════════════════════════════ */}
       <div className="w-64 shrink-0 flex flex-col gap-4">
         <BattleScoreboard scores={scores} />
+
+        {/* ── Per-question timer (large, right panel) ── */}
+        {!battleEnded && (() => {
+          const radius = 36;
+          const circ   = 2 * Math.PI * radius;
+          const pct    = qTimeLeft / Q_TIMER_SECONDS;
+          const offset = circ * (1 - pct);
+          const color  = qTimeLeft > 10 ? '#22c55e' : qTimeLeft > 5 ? '#f59e0b' : '#ef4444';
+          return (
+            <div className="bg-bg-card border border-border-primary rounded-xl p-4 flex flex-col items-center gap-2">
+              <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider w-full">Time Left</p>
+              <div className="relative flex items-center justify-center" style={{ width: 88, height: 88 }}>
+                <svg width="88" height="88" className="-rotate-90">
+                  <circle cx="44" cy="44" r={radius} fill="none" stroke="#1e293b" strokeWidth="5" />
+                  <circle
+                    cx="44" cy="44" r={radius}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeDasharray={circ}
+                    strokeDashoffset={qTimerActive ? offset : 0}
+                    style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="text-2xl font-black tabular-nums" style={{ color }}>
+                    {qTimerActive ? qTimeLeft : '—'}
+                  </span>
+                  <span className="text-[9px] text-text-muted font-mono">sec</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-text-muted font-mono">
+                {qTimerActive
+                  ? `Q${selectedProblemIdx + 1} of ${problems.length}`
+                  : countdown !== null && countdown > 0
+                    ? `Starting in ${countdown}s…`
+                    : 'Waiting…'}
+              </p>
+            </div>
+          );
+        })()}
 
         {/* Battle meta */}
         <div className="bg-bg-card border border-border-primary rounded-xl p-4 space-y-2 text-xs font-mono text-text-muted">
